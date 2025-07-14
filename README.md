@@ -1,6 +1,6 @@
 # ⌨️ Mello.Ops
 
-Welcome to **Mello.Ops** – the all-in-one, supercharged AutoHotkey toolkit for Windows power users, keyboard tinkerers, and productivity wizards!  
+Welcome to **Mello.Ops** - the all-in-one, supercharged AutoHotkey toolkit for Windows power users, keyboard tinkerers, and productivity wizards!  
 Unleash a world of hotkeys, automations, and clever tricks, all wrapped up in a friendly, customizable package.
 
 ---
@@ -11,7 +11,7 @@ Unleash a world of hotkeys, automations, and clever tricks, all wrapped up in a 
 - 🪄 Powerful global hotkeys and automations (AutoHotkey v2)
 - 🎛️ Easy tray menu for quick access
 - 🔊 Fun sound effects and notifications
-- 🧩 Modular library – add your own scripts!
+- 🧩 Modular library - add your own scripts!
 
 Check out the [full list of hotkeys and](docs/README.md#hotkeys) and [features](docs/README.md#features) to see what Mello.Ops can do for you!
 
