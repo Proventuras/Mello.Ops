@@ -1,0 +1,34 @@
+# Other References
+
+## ASCII Alt-Key Codes for the boxes and tables hotstrings
+Source: https://cache.lovethispic.com/uploaded_images/178042-Alt-Codes-Reference-Sheet.jpg
+
+```
+Single Lines (for HotString auto replacement)
+218: ┌    196: ─    194: ┬    196: ─    191: ┐
+179: │              179: │              179: │
+195: ├    196: ─    197: ┼    196: ─    180: ┤
+179: │              179: │              179: │
+192: └    196: ─    180: ┴    196: ─    217: ┘
+
+Double Lines
+201: ╔    205: ═    203: ╦    205: ═    187: ╗
+186: ║              186: ║              186: ║
+204: ╠    205: ═    206: ╬    205: ═    185: ╣
+186: ║              186: ║              186: ║
+200: ╚    205: ═    202: ╩    205: ═    188: ╝
+
+Combination Lines (Double Horizontal)
+213: ╒    205: ═    209: ╤    205: ═    184: ╕
+179: │              179: │              179: │
+198: ╞    205: ═    216: ╪    205: ═    181: ╡
+179: │              179: │              179: │
+212: ╘    205: ═    207: ╧    205: ═    190: ╛
+
+Combination Lines (Double Vertical)
+214: ╓    196: ─    210: ╥    196: ─    183: ╖
+186: ║              186: ║              186: ║
+199: ╟    196: ─    215: ╫    196: ─    182: ╢
+186: ║              186: ║              186: ║
+211: ╙    196: ─    208: ╨    196: ─    189: ╜
+```
