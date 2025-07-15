@@ -69,15 +69,13 @@ Just right-click the tray icon and select **"Run at Startup"**. Easy!
 ## 🗂️ Project Structure
 
 ```plaintext
-Mello.Ops/
-├── Mello.Ops.ahk         # Main script
-├── start-mello.ps1       # PowerShell installer and launcher
-├── docs/                 # Documentation
-├── lib/                  # Modular AHK libraries
-├── media/                # Icons & sounds
-└── README.md
-```
-
+📂 Mello.Ops/
+ ├── 📂 docs/                 # Documentation (in progress)
+ ├── 📂 lib/                  # Modular AHK libraries
+ ├── 📂 media/                # Icons & sounds
+ ├── 📄 Mello.Ops.ahk         # Main script
+ ├── 📄 Start-Mello.ps1       # PowerShell installer and launcher
+ └── 📄 README.md
 ---
 
 ## 🤝 Contributing
@@ -94,6 +92,4 @@ We love making Windows more fun and productive!
 
 ---
 
-**Stay sharp, stay speedy, and enjoy your new keyboard superpowers!**
-
-— Proventuras
+**Accellerate and Chill**
