@@ -88,24 +88,24 @@ ShowAboutDialog(*) {
   ; Logo and Title, version number, and license
   aboutDlg.Add("Picture", "x16 y74 w48 h48", A_ScriptDir "\media\icons\mello-leaf.ico")
   aboutDlg.SetFont("c3e3d32", "Segoe UI")
-  aboutDlg.SetFont("Bold s20", "Segoe UI")
+  aboutDlg.SetFont("c00b515 Bold s20", "Segoe UI")
   aboutDlg.Add("Text", "x72 y74 w470 h50", "Mello.Ops")
-  aboutDlg.SetFont("q5 s10", "Segoe UI")
+  aboutDlg.SetFont("c353881 q5 s10", "Segoe UI")
   aboutDlg.Add("Text", "x72 y120 w300 h23", "Version: " thisapp_version)
   aboutDlg.Add("Text", "x372 y120 w300 h23", "Private Memory Usage: " memMB " MB")
   aboutDlg.Add("Text", "x72 y140 w600 h23", "Licensed under the MIT License")
   aboutDlg.Add("Text", "x372 y140 w600 h23", "Uptime: " UptimeString)
 
   ; Credit Section and Links to other resources
-  aboutDlg.SetFont("Bold s10", "Segoe UI")
-  aboutDlg.Add("Text", "x72 y180 w600 h23", "Credits and Resources")
+  aboutDlg.SetFont("c00b515 Bold s11", "Segoe UI")
+  aboutDlg.Add("Text", "x72 y405 w600 h23", "Credits and Resources")
   aboutDlg.SetFont("c000000 Norm q5 s10", "Segoe UI")
-  aboutDlg.Add("Link", "x72 y210 w600 h23",
+  aboutDlg.Add("Link", "x72 y430 w600 h23",
     "AutoHotkey (version " A_AhkVersion ") is available at <a href=`"https://www.autohotkey.com`">autohotkey.com</a>")
-  aboutDlg.Add("Link", "x72 y230 w600 h23", "Icons by <a href=`"https://icons8.com`">icons8.com</a>")
-  aboutDlg.Add("Link", "x72 y250 w600 h23",
+  aboutDlg.Add("Link", "x72 y450 w600 h23", "Icons by <a href=`"https://icons8.com`">icons8.com</a>")
+  aboutDlg.Add("Link", "x72 y470 w600 h23",
     "<a href=`"https://www.autohotkey.com/boards/viewtopic.php?f=83&t=94044`">WiseGUI.ahk library</a> by <a href=`"https://www.autohotkey.com/boards/memberlist.php?mode=viewprofile&u=54&sid=f3bac845536fc1eace03994a9e73273e`">SKAN</a>")
-  aboutDlg.Add("Link", "x72 y270 w300 h23",
+  aboutDlg.Add("Link", "x72 y490 w300 h23",
     "<a href=`"https://github.com/FuPeiJiang/VD.ahk/tree/v2_port`">VD.ahk library</a> by <a href=`"https://github.com/FuPeiJiang`">FuPeiJiang</a>")
   ; aboutDlg.Add("Link", "x72 y270 w300 h23",
   ; "<a href=`"https://github.com/Ciantic/VirtualDesktopAccessor`">VirtualDesktopAccessor</a> by <a href=`"https://github.com/Ciantic`">Ciantic</a>")
@@ -118,26 +118,29 @@ ShowAboutDialog(*) {
   aboutDlg.Add("Text", "x16 y74 w705 h23", "Hotkeys are synonymous to keyboard shortcuts. Go ahead and try them out!")
   ; aboutDlg.Add("Text", "x16 y120 w720 h23", "You can also add your own hotkeys in the script file, or use the auxiliary hotkeys feature to create custom hotkeys on the fly.")
   ; Add ListView for Hotkeys
-  aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
-  lv_corehkeys := aboutDlg.Add("ListView", "r16 w732", ["Action", "Hotkey", "Description"])
-  lv_corehkeys.Opt("+Report +Sort")
+  ; aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
+  lv_corehkeys := aboutDlg.Add("ListView", "r16 w732 -LV0x10 -Multi NoSort c353881", ["Action", "Hotkey", "Description"])
+  lv_corehkeys.Opt("+Report") ; +Sort")
   ; Set the column widths
-
+  
   ; Example hotkeys - replace/add as needed for your project
   lv_corehkeys.Opt("-Redraw")
   lv_corehkeys.Add(, "Reload and Restart " thisapp_name, "[Ctrl] + [⊞] + [Alt] + [R] ", "Reload and restart " thisapp_name)
   lv_corehkeys.Add(, "AutoHotkey Help", "[Ctrl] + [⊞] + [Alt] + [F2]`t", "Open the AutoHotkey help docs")
-  lv_corehkeys.Add(, thisapp_name " Help", "[Ctrl] + [⊞] + [Alt] + [F1]`t", "Display this dialog")
   lv_corehkeys.Add(, "Sleep", "[Ctrl] + [⊞] + [Alt] + [F12]`t", "Put this system to sleep")
+  lv_corehkeys.Add(, thisapp_name " Help", "[Ctrl] + [⊞] + [Alt] + [F1]`t", "Display this dialog")
   lv_corehkeys.Add(, "Open the user's folder", "[⊞] + [F]`t", "Open the user's directory in File Explorer")
+  
+  lv_corehkeys.Add(, "", "", "")
+  lv_corehkeys.Add(, "**Window Management**", "", "")
   lv_corehkeys.Add(, "Edit this script", "[Ctrl] + [⊞] + [Alt] + [E]`t", "Open the main " thisapp_name " script (default editor)")
   lv_corehkeys.Add(, "Open the " thisapp_name " folder", "[Ctrl] + [⊞] + [Alt] + [F]`t", "Open the " thisapp_name " folder in File Explorer")
   lv_corehkeys.Add(, "Windows Terminal", "[Ctrl] + [Alt] + [T]`t", "Open or focus the Windows Terminal window")
   lv_corehkeys.Add(, "Windows Terminal (Elevated)", "[Ctrl] + [Shift] + [Alt] + [T]`t", "Open an elevated Windows Terminal instance")
   lv_corehkeys.Add(, "Open Calculator", "2 × [Right_Ctrl]`t", "Open or focus the Calculator app")
   lv_corehkeys.Add(, "Resize Window to 70%", "[CapsLock] + [/]`t", "Resize the active window to 70% of the screen size.")
-  lv_corehkeys.Add(, "Decrease Window Size", "[CapsLock] + `[`t", "Decrease active window size by 5%.")
-  lv_corehkeys.Add(, "Increase Window Size", "[CapsLock] + `]`t", "Increase active window size by 5%.")
+  lv_corehkeys.Add(, "Decrease Window Size", "[CapsLock] + [LBracket]`t", "Decrease active window size by 5%.")
+  lv_corehkeys.Add(, "Increase Window Size", "[CapsLock] + [RBracket]`t", "Increase active window size by 5%.")
   lv_corehkeys.Add(, "Move Window Up", "[CapsLock] + [↑]`t", "Move the active window up.")
   lv_corehkeys.Add(, "Move Window Down", "[CapsLock] + [↓]`t", "Move the active window down.")
   lv_corehkeys.Add(, "Move Window Left", "[CapsLock] + [←]`t", "Move the active window left.")

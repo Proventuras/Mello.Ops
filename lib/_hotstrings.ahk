@@ -15,6 +15,7 @@
 /*
 ┌────────────────────────────────────────────────────────────────────────┐
 │  Basic tables and boxes for dev and other text editing workflows       │
+├────────────────────────────────────────────────────────────────────────┤
 │  involving monospace fonts; customize the conditions to your liking.   │
 └────────────────────────────────────────────────────────────────────────┘
 
@@ -25,82 +26,44 @@
 #HotIf (Aux_HotStringSupport = true)
 {
   #HotString SE K40
-  /*
-  :*:##tbl-thin##::
-  :*:##tbl##::{
-      Sleep 100
-      Send "┌──┬──┐{ENTER}"
-      Send "│  │  │{ENTER}"
-      Send "├──┼──┤{ENTER}"
-      Send "│  │  │{ENTER}"
-      Send "└──┴──┘{ENTER}"
-      Send "{Blind}{Shift up}"
-  }
-  
-  :*:##tbl-thick##::
-  :*:##tbl-thicc##::{
-      Sleep 100
-      Send "╔══╦══╗{ENTER}"
-      Send "║  ║  ║{ENTER}"
-      Send "╠══╬══╣{ENTER}"
-      Send "║  ║  ║{ENTER}"
-      Send "╚══╩══╝{ENTER}"
-      Send "{Blind}{Shift up}"
-  }
-  
-  :*:##tbl-hthick##::
-  :*:##tbl-hthicc##::
-  :*:##tbl-vthin##::
-  :*:##tbl-thinv##::
-  {
+  /* ------------------------------------
+  SIMPLE BOX (sbox)
+  +--+
+  |  |
+  +--+
+  */
+  :*:##sbox##:: {
     Sleep 100
-    Send "╒══╦══╕{ENTER}"
-    Send "│  │  │{ENTER}"
-    Send "╞══╬══╡{ENTER}"
-    Send "│  │  │{ENTER}"
-    Send "╘══╩══╛{ENTER}"
+    Send "{+}--{+}{ENTER}"
+    Send "|  |{ENTER}"
+    Send "{+}--{+}"
     Send "{Blind}{Shift up}"
   }
-  
-  :*:##tbl-vthick##::
-  :*:##tbl-vthicc##::
-  :*:##tbl-hthin##::
-  :*:##tbl-thinh##::
-  {
-      Sleep 100
-      Send "╓──╥──╖{ENTER}"
-      Send "║  ║  ║{ENTER}"
-      Send "╟──╫──╢{ENTER}"
-      Send "║  ║  ║{ENTER}"
-      Send "╙──╨──╜{ENTER}"
-      Send "{Blind}{Shift up}"
-  }
-  
-  :*:##tbl-simple##::
-  :*:##tbl-basic##::
-  :*:##tbl-simp##::{
-      Sleep 100
-      Send "{+}--{+}--{+}{ENTER}"
-      Send "|  |  |{ENTER}"
-      Send "{+}--{+}--{+}{ENTER}"
-      Send "|  |  |{ENTER}"
-      Send "{+}--{+}--{+}{ENTER}"
-      Send "{Blind}{Shift up}"
-  }
+
+  /*
+  SIMPLE TABLES (stable)
+  +--+--+
+  |  |  |
+  +--+--+
+  |  |  |
+  +--+--+
   */
-  ; SIMPLE TABLES
-  :*:##tabl##::
-  :*:##table##:: {
+  :*:##stable##:: {
     Sleep 100
     Send "{+}--{+}--{+}{ENTER}"
-    Send "|          |          |{ENTER}"
+    Send "|  |  |{ENTER}"
     Send "{+}--{+}--{+}{ENTER}"
-    Send "|          |          |{ENTER}"
+    Send "|  |  |{ENTER}"
     Send "{+}--{+}--{+}{ENTER}"
     Send "{Blind}{Shift up}"
   }
 
-  ; ROUND-CORNERED BOX
+  /* ------------------------------------
+  ROUND-CORNERED BOX
+  ╭──╮
+  │  │
+  ╰──╯
+  */
   :*:##rbox##:: {
     Sleep 100
     Send "╭──╮{ENTER}"
@@ -108,20 +71,23 @@
     Send "╰──╯{ENTER}"
     Send "{Blind}{Shift up}"
   }
-  
-  ; ROUND-CORNERED BOX - INSERT/SPLIT ROW
-    :*:##rbox-insert-row##:: 
-    :*:##rbox-split-row##:: {
-    Sleep 100
-    ; Get the previous line's text
-    ClipSaved := ClipboardAll
 
+  ; Any Box - Split or Insert a row above the current line
+  :*:##insert-row##::
+  :*:##split-row##:: {
+    A_Clipboard := ""  ; Clear the clipboard
     Send "{Up}{Home}+{End}"
     Send "^c"
+    Sleep 100
 
-    if !ClipWait(2) {
-      MsgBox "Unable to read the line above the cursor"
+    if (!ClipWait(2, 1) or StrLen(A_Clipboard) = 0) {
+      Send "An attempt to measure the previous line's length failed. Please try again."
       return
+    } else if (StrLen(A_Clipboard) > 256) {
+      Send "An unusually high length of " StrLen(A_Clipboard) " characters was detected in the previous line. Please try again."
+      return
+    } else {
+      ; MsgBox "Previous line is " StrLen(A_Clipboard) " characters long"
     }
     prevLine := A_Clipboard
 
@@ -132,22 +98,36 @@
     rowLen := 0
     if (StrLen(prevLine) >= 2) {
       leftEdge := SubStr(prevLine, 1, 1)
+      if (leftEdge = "╔" or leftEdge = "║" or leftEdge = "╠") {
+        newRowLeftEdge := "╠"
+        newRowHLine := "═"
+        newRowRightEdge := "╣"
+      } else if (leftEdge = "┌" or leftEdge = "╭" or leftEdge = "│" or leftEdge = "├") {
+        newRowLeftEdge := "├"
+        newRowHLine := "─"
+        newRowRightEdge := "┤"
+      } else if (leftEdge = "+" or leftEdge = "|") {
+        newRowLeftEdge := "{+}"
+        newRowHLine := "-"
+        newRowRightEdge := "{+}"
+      } else {
+        return
+      }
+    
       rightEdge := SubStr(prevLine, -0, 1)
       rowLen := StrLen(prevLine)
     }
+    ; MsgBox "Left Edge: " newRowLeftEdge "`nRight Edge: " newRowRightEdge "`nRow Length: " rowLen
 
     ; Build the split row
-    ; Use "├" + (rowLen-2) times "-" + "┤"
     Send "{Down}{Home}"
-    splitRow := "├" . StrRepeat("-", rowLen-2) . "┤{ENTER}"
-
-    Send splitRow
+    splitRow := newRowLeftEdge StrRepeat(newRowHLine, rowLen - 2) newRowRightEdge
+    Send splitRow . "{ENTER}"
     Send "{Blind}{Shift up}"
   }
+
   ; ROUND-CORNERED table
-  :*:##rtbl##::
-  :*:##rtable##::
-  {
+  :*:##rtable##:: {
     Sleep 100
     Send "╭──┬──╮{ENTER}"
     Send "│  │  │{ENTER}"
@@ -158,34 +138,13 @@
   }
 
 
-
-  ; SIMPLE BOXES
-  :*:##box##:: {
-    Sleep 100
-    Send "{+}--{+}{ENTER}"
-    Send "|  |{ENTER}"
-    Send "{+}--{+}"
-    Send "{Blind}{Shift up}"
-  }
-
-  :*:##box-addrow##:: {
-    Sleep 100
-    Send "|  |{ENTER}"
-    Send "{+}--{+}"
-    Send "{Blind}{Shift up}"
-  }
-
-  :*:##box-addcol##:: {
-    Sleep 100
-    Send "{+}--{+}{down}{end}"
-    Send "  |{down}{end}"
-    Send "--{+}{down}{end}"
-    Send "{Blind}{Shift up}"
-  }
-
-  ; Complex ASCII boxes
-  :*:##tbox##:: 
-  :*:##box##:: {
+  /* ------------------------------------
+  Gen1 Box of ole' (tbox)
+  ┌──┐
+  │  │
+  └──┘
+  */
+  :*:##tbox##:: {
     Sleep 100
     Send "┌──┐{ENTER}"
     Send "│  │{ENTER}"
@@ -193,40 +152,17 @@
     Send "{Blind}{Shift up}"
   }
 
-  :*:##box-thick##::
-  :*:##box-thicc##:: {
+  /* ------------------------------------
+  Gen1 Box of ole' with THICK lines (tbox-thick)
+  ╔══╗
+  ║  ║
+  ╚══╝
+  */
+  :*:##tbox-thick##:: {
     Sleep 100
     Send "╔══╗{ENTER}"
     Send "║  ║{ENTER}"
     Send "╚══╝{ENTER}"
-    Send "{Blind}{Shift up}"
-  }
-
-
-
-  ; Fancy boxes with THIN vertical lines and THICK horizontal lines
-  :*:##box-hthick##::
-  :*:##box-hthicc##::
-  :*:##box-vthin##::
-  :*:##box-thinv##::
-  {
-    Sleep 100
-    Send "╒══╕{ENTER}"
-    Send "│  │{ENTER}"
-    Send "╘══╛{ENTER}"
-    Send "{Blind}{Shift up}"
-  }
-
-  ; Fancy boxes with THICK vertical lines and THIN horizontal lines
-  :*:##box-vthick##::
-  :*:##box-vthicc##::
-  :*:##box-hthin##::
-  :*:##box-thinh##::
-  {
-    Sleep 100
-    Send "╓──╖{ENTER}"
-    Send "║  ║{ENTER}"
-    Send "╙──╜{ENTER}"
     Send "{Blind}{Shift up}"
   }
 }
@@ -244,8 +180,8 @@
 #HotIf (Aux_HotStringSupport = true)
 {
   ; #HotString SI K-1
-  ; Common Emojis
-  ::`!idk::¯\(°_o)/¯           
+  ; Common Emojis (trimmed)
+  ::`!idk::¯\(°_o)/¯
   ::`!shrug::¯\_(ツ)_/¯
   ::`!ohshit::( º﹃º )
   ::`!tableflip::(ノಠ益ಠ)ノ彡┻━┻
@@ -261,10 +197,7 @@
   ::`!lookup::🔍
   ::`!search::🔎
   ::`!star::⭐
-  ::`!star2::🌟
-  ::`!star3::✨
-  ::`!star4::💫
-  ::`!zap::⚡ 
+  ::`!zap::⚡
   ::`!fire::🔥
   ::`!heart::❤️
   ::`!noob::🔰
@@ -283,12 +216,13 @@
   ::`!clock::⏰
   ::`!checkmark::✅
   ::`!crossmark::❎
+  ::`!file::📄
+  ::`!folder::📁
+  ::`!folderopen::📂
+  ::`!link::🔗
 
   ; ANSI/ASCII Alt Codes
   ::`!bullet::•         ; 7
-  ::`!degree::°         ; 0176
-  ::`!smiley::☺️         ; 1
-  ::`!sun::☼            ; 15
 
   ::`!multiply::×       ; 0215
   ::`!divide::÷         ; 0247
@@ -301,15 +235,8 @@
   ::`!downarrow::↓      ; 25
   ::`!rightarrow::→     ; 26
   ::`!leftarrow::←      ; 27
-  ::`!updownarrow::↕    ; 18
-  ::`!leftrightarrow::↔ ; 29
-  ::`!upleftarrow::↖    ; 2196
-  ::`!uprightarrow::↗   ; 2197
-  ::`!downleftarrow::↙  ; 2199
-  ::`!downrightarrow::↘ ; 2198
-  
+
   ::`!tricolon::⁝       ; 8234
-  ::`!fahrenheit::℉   ; 8457
   ::`!windows::⊞         ; 8992 Used for Windows key or Windows logo
   ::`!checkansi::✓       ; 10003
   ::`!capslock::⇪        ; 10548 Used for Caps Lock key
@@ -320,20 +247,15 @@
   ::`!space::␣          ; 8199 Used for Space key
   ::`!delete::⌦         ; 9004 Used for Delete key
   ::`!insert::⎀         ; 9005 Used for Insert key
-  
-  ; Common Misspellings
 
 }
 #HotIf
 
-/*
-*/
 
 ; Helper function to repeat a string n times
 StrRepeat(str, count) {
-    result := ""
-    Loop count
-        result .= str
-    return result
+  result := ""
+  Loop count
+    result .= str
+  return result
 }
-
