@@ -12,7 +12,7 @@ CoordMode "Mouse"
 ; ╰═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╯
 
 ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-; │ Configuration                                                                                     │
+; │ Configuration                                                                                                   │
 ; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 global GESTURE_TOLERANCE := 60  ; Pixels the mouse must move to trigger a gesture.
 global GESTURE_MIN_TIME := 50   ; Minimum milliseconds for a gesture to register.
@@ -26,10 +26,9 @@ CapsLock & LButton:: HandleWindowDrag()
 CapsLock & RButton:: HandleWindowResize()
 CapsLock & MButton:: HandleWindowGesture()
 
-; ╭───────────────────────────────────────────────────────────────────────────────────────────────────╮
-; │ Numpad Hotkeys for Snapping                                                                       │
-; ╰───────────────────────────────────────────────────────────────────────────────────────────────────╯
-
+; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+; │ Numpad Hotkeys for Snapping                                                                                     │
+; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 CapsLock & Numpad1:: SnapActiveWindow("bottom", "left", "half")
 CapsLock & Numpad2:: SnapActiveWindow("bottom", "full", "half")
 CapsLock & Numpad3:: SnapActiveWindow("bottom", "right", "half")
@@ -40,59 +39,75 @@ CapsLock & Numpad7:: SnapActiveWindow("top", "left", "half")
 CapsLock & Numpad8:: SnapActiveWindow("top", "full", "half")
 CapsLock & Numpad9:: SnapActiveWindow("top", "right", "half")
 
-
-; --- Sizing and Posing ---
-CapsLock & /:: SqueezeAndPose(70)      ; [⇪]+[/]: Resize to 70% of the screen and center
-CapsLock & [:: SqueezeAndPose(0, -5)      ; [⇪]+[: Decrease size by 5% of the screen
-CapsLock & ]:: SqueezeAndPose(0, 5)       ; [⇪]+]: Increase size by 5% of the screen
+; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+; │ Sizing and Posing                                                                                               │
+; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+CapsLock & /:: SqueezeAndPose(70)         ; [⇪]+[/]: Resize to 70% of the screen and center
+CapsLock & <:: SqueezeAndPose(0, -5)      ; [⇪]+[<]: Decrease size by 5% of the screen
+CapsLock & >:: SqueezeAndPose(0, 5)       ; [⇪]+[>]: Increase size by 5% of the screen
 
 ; --- Arrow Key Combinations ---
 CapsLock & Up:: {
   if GetKeyState("LCtrl", "P") {
-    ResizeWindowBorders(0, 5, 0, 5)
-  }     ; [⇪]+[LCtrl]+[↑]: Expand window vertically by 10%
-  else if GetKeyState("LAlt", "P") {
-    ResizeWindowBorders(0, -5, 0, -5)
-  }   ; [⇪]+[LAlt]+[↑]: Shrink window vertically by 10%
-  else {
-    MoveActiveWindow(0, -50)
-  }            ; [⇪]+[↑]: Move window up
+    ResizeWindowBorders(0, 5, 5, 0)       ; [⇪]+[LCtrl]+[↑]: Expand window vertically by 10%
+  }     
+  else if GetKeyState("LAlt", "P") {      ; [⇪]+[Alt]+[↑]: Extend window to top of monitor
+    ; ResizeWindowBorders(0, -5, 0, -5)     
+    active_hwnd := WinExist("A")
+    if IsExcludedWindow(active_hwnd)
+      return
+    WinGetPos(&winX, &winY, &winW, &winH, active_hwnd)
+    monitor_index := GetMonitorIndexFromWindow(active_hwnd)
+    MonitorGetWorkArea(monitor_index, &monX, &monY, &monRight, &monBottom)
+    newH := winH + (winY - monY)
+    WinMove(winX, monY, winW, newH, active_hwnd)
+  } else {     
+    MoveActiveWindow(0, -50)              ; [⇪]+[↑]: Move window up
+  } 
 }
 
 CapsLock & Down:: {
   if GetKeyState("LCtrl", "P") {
-    ResizeWindowBorders(0, 5, 0, 5)
-  }     ; [⇪]+[LCtrl]+[↓]: Expand window vertically by 10%
+    ResizeWindowBorders(0, -5, -5, 0)       ; [⇪]+[LCtrl]+[↓]: Shrink window vertically by 10%
+  }
   else if GetKeyState("LAlt", "P") {
-    ResizeWindowBorders(0, -5, 0, -5)
-  }   ; [⇪]+[LAlt]+[↓]: Shrink window vertically by 10%
+    ResizeWindowBorders(-5, 0, 0, -5)     ; [⇪]+[LAlt]+[↓]: Extend window to the bottom of the monitor
+    active_hwnd := WinExist("A")
+    if IsExcludedWindow(active_hwnd)
+      return
+    WinGetPos(&winX, &winY, &winW, &winH, active_hwnd)
+    monitor_index := GetMonitorIndexFromWindow(active_hwnd)
+    MonitorGetWorkArea(monitor_index, &monX, &monY, &monRight, &monBottom)
+    newH := monBottom - winY
+    WinMove(winX, winY, winW, newH, active_hwnd)
+  }
   else {
-    MoveActiveWindow(0, 50)
-  }             ; [⇪]+[↓]: Move window down
+    MoveActiveWindow(0, 50)               ; [⇪]+[↓]: Move window down
+  }
 }
 
 CapsLock & Left:: {
   if GetKeyState("LCtrl", "P") {
-    ResizeWindowBorders(5, 0, 5, 0)
-  }     ; [⇪]+[LCtrl]+[←]: Expand window horizontally by 10%
+    ResizeWindowBorders(-5, 0, 0, -5)       ; [⇪]+[LCtrl]+[←]: Shrink window horizontally by 10%
+  }
   else if GetKeyState("LAlt", "P") {
-    ResizeWindowBorders(-5, 0, -5, 0)
-  }   ; [⇪]+[LAlt]+[←]: Shrink window horizontally by 10%
+    ResizeWindowBorders(-5, 0, -5, 0)     ; [⇪]+[LAlt]+[←]: Shrink window horizontally by 10%
+  }
   else {
-    MoveActiveWindow(-50, 0)
-  }            ; [⇪]+[←]: Move window left
+    MoveActiveWindow(-50, 0)              ; [⇪]+[←]: Move window left
+  }
 }
 
 CapsLock & Right:: {
   if GetKeyState("LCtrl", "P") {
-    ResizeWindowBorders(5, 0, 5, 0)
-  }     ; [⇪]+[LCtrl]+[→]: Expand window horizontally by 10%
+    ResizeWindowBorders(5, 0, 0, 5)       ; [⇪]+[LCtrl]+[→]: Expand window horizontally by 10%
+  }
   else if GetKeyState("LAlt", "P") {
-    ResizeWindowBorders(-5, 0, -5, 0)
-  }   ; [⇪]+[LAlt]+[→]: Shrink window horizontally by 10%
+    ResizeWindowBorders(-5, 0, -5, 0)     ; [⇪]+[LAlt]+[→]: Shrink window horizontally by 10%
+  }
   else {
-    MoveActiveWindow(50, 0)
-  }             ; [⇪]+[→]: Move window right
+    MoveActiveWindow(50, 0)               ; [⇪]+[→]: Move window right
+  }             
 }
 
 ; ╭───────────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -143,17 +158,25 @@ SqueezeAndPose(screen_percent, resize_percent := 0) {
   WinMove(newX, newY, newW, newH, active_hwnd)
 }
 
-ResizeWindowBorders(left_percent := 0, top_percent := 0, right_percent := 0, bottom_percent := 0) {
+ResizeWindowBorders(left_percent := 0, bottom_percent := 0, top_percent := 0, right_percent := 0) {
   ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Resizes the active window by moving its borders by a specified percentage of the current monitor's size.    │
   ; │                                                                                                             │
   ; │ Parameters (in percent of monitor size):                                                                    │
   ; │   left_percent:   Positive expands left, negative shrinks from the left.                                    │
+  ; │   bottom_percent: Positive expands down, negative shrinks from the bottom.                                  │
   ; │   top_percent:    Positive expands up, negative shrinks from the top.                                       │
   ; │   right_percent:  Positive expands right, negative shrinks from the right.                                  │
-  ; │   bottom_percent: Positive expands down, negative shrinks from the bottom.                                  │
   ; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  active_hwnd := WinExist("A")
+  ; Get the active window handle and its current position/size
+
+  ; Cancel operation if the active window is a Remote Deskto Connection or a Snap Assist window
+  if (WinGetClass("A") = "TscShellContainerClass" or WinGetTitle("A") = "Snap Assist" or WinGetClass("A")="XamlExplorerHostIslandWindow") {
+    return
+  }
+  active_hwnd := WinGetID("A")
+  ; active_hwnd := WinExist("A")
+  
   if IsExcludedWindow(active_hwnd)
     return
 
@@ -177,10 +200,15 @@ ResizeWindowBorders(left_percent := 0, top_percent := 0, right_percent := 0, bot
   newW := winW + leftDelta + rightDelta
   newH := winH + topDelta + bottomDelta
 
+  ;MsgBox("Resizing window: " . active_hwnd . "`n" . "Old xy: " . winX . "x" . winY . "`nOld WH: " . winW . "x" . winH . "`nNew Position: (" . newX . ", " . newY . ")`n" . "New Size: " . newW . "x" . newH)
+  
   ; Ensure the window does not become smaller than a minimum size
-  if (newW < 100) newW := 100
-    if (newH < 100) newH := 100
-      WinRestore(active_hwnd)
+  if (newW < 100) 
+    newW := 100
+  if (newH < 100) 
+    newH := 100
+  
+  ; WinRestore(active_hwnd)
   WinMove(newX, newY, newW, newH, active_hwnd)
 }
 
@@ -206,7 +234,7 @@ MoveActiveWindow(leftDelta := 0, topDelta := 0) {
   newX := winX + leftDelta
   newY := winY + topDelta
 
-  WinRestore(active_hwnd)
+  ; WinRestore(active_hwnd)
   WinMove(newX, newY, , , active_hwnd)
 }
 

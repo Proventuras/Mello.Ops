@@ -30,6 +30,9 @@ ShowHelpAbout(*) {
   ;   mainTab.Move("w" . (dlg.ClientPos.W - 16) . " h" . (dlg.ClientPos.H - 80)),
   ;   aboutDlg["StatusBar"].Move("w" . dlg.ClientPos.W)
   ; ))
+  
+  ; Prevent attempts handle the "Size" event to ignore resizing from WinMove
+  aboutDlg.OnEvent("Size", (*) => aboutDlg.Show("w" dlgWidth " h" dlgHeight))
 }
 
 ShowAboutDialog(*) {
@@ -86,9 +89,9 @@ ShowAboutDialog(*) {
   ; Tab 1 - About
   mainTab.UseTab(1)
   ; Logo and Title, version number, and license
-  aboutDlg.Add("Picture", "x16 y74 w48 h48", A_ScriptDir "\media\icons\mello-leaf.ico")
-  aboutDlg.SetFont("c3e3d32", "Segoe UI")
-  aboutDlg.SetFont("c00b515 Bold s20", "Segoe UI")
+  aboutDlg.Add("Picture", "x16 y74 w48 h48", A_ScriptDir "\media\icons\Mello.Ops.ico")
+  ; aboutDlg.SetFont("c3e3d32", "Segoe UI")
+  aboutDlg.SetFont("c039314 Bold s21", "Segoe UI")
   aboutDlg.Add("Text", "x72 y74 w470 h50", "Mello.Ops")
   aboutDlg.SetFont("c353881 q5 s10", "Segoe UI")
   aboutDlg.Add("Text", "x72 y120 w300 h23", "Version: " thisapp_version)
@@ -96,8 +99,16 @@ ShowAboutDialog(*) {
   aboutDlg.Add("Text", "x72 y140 w600 h23", "Licensed under the MIT License")
   aboutDlg.Add("Text", "x372 y140 w600 h23", "Uptime: " UptimeString)
 
+  ; Tagline
+  aboutDlg.Add("GroupBox", "x72 y232 w500 h56", "")
+  aboutDlg.SetFont("Bold Italic s14", "Segoe UI")
+  aboutDlg.Add("Text", "x80 y250 w400 h23 ", "Chill. Flow. Repeat.")
+  
+  ; Horizontal Line
+  ; aboutDlg.Add("menu", "x16 y200 w732 h1 c353881")
+  
   ; Credit Section and Links to other resources
-  aboutDlg.SetFont("c00b515 Bold s11", "Segoe UI")
+  aboutDlg.SetFont("c039314 Bold q5 s11", "Segoe UI")
   aboutDlg.Add("Text", "x72 y405 w600 h23", "Credits and Resources")
   aboutDlg.SetFont("c000000 Norm q5 s10", "Segoe UI")
   aboutDlg.Add("Link", "x72 y430 w600 h23",

@@ -3,7 +3,7 @@
 ; ╭───────────╮
 ; │ VARIABLES │
 ; ╰───────────╯
-tray_icon_normal := ".\media\icons\mello-leaf.ico"
+tray_icon_normal := ".\media\icons\Mello.Ops.ico"
 tray_icon_pause_all := ".\media\icons\sl-pause.ico"
 tray_icon_pause_hotkeys := ".\media\icons\sl-pause.ico"
 tray_icon_pause_hotstrings := ".\media\icons\sl-pause-hs.ico"

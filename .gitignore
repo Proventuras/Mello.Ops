@@ -1,7 +1,4 @@
 
-# Ignore all files in the scratch and snippets foldres
-**/.playground/*
-
 # Ignore the AutoHotkey binaries; to be installed manually or via the PS1 bootstrap script
 **/ahkbin*/*
 
@@ -12,5 +9,3 @@ desktop.ini
 # Only a generalized version should be included in the release
 custom/_custom_functions.ahk
 
-# Gemini CLI config
-gemini.md
