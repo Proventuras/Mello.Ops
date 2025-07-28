@@ -1,9 +1,6 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
-SendMode "Input"
 SetWorkingDir A_ScriptDir
-SetWinDelay 2
-CoordMode "Mouse"
 
 ; ╭════════════════════════════════════════════════════════════════════════════════════════════════════════════════─╮
 ; ║  WINDOW_MGR.AHK (v2502_beta)                                                                                    ║
@@ -50,36 +47,20 @@ CapsLock & >:: SqueezeAndPose(0, 5)       ; [⇪]+[>]: Increase size by 5% of th
 CapsLock & Up:: {
   if GetKeyState("LCtrl", "P") {
     ResizeWindowBorders(0, 5, 5, 0)       ; [⇪]+[LCtrl]+[↑]: Expand window vertically by 10%
-  }     
-  else if GetKeyState("LAlt", "P") {      ; [⇪]+[Alt]+[↑]: Extend window to top of monitor
-    ; ResizeWindowBorders(0, -5, 0, -5)     
-    active_hwnd := WinExist("A")
-    if IsExcludedWindow(active_hwnd)
-      return
-    WinGetPos(&winX, &winY, &winW, &winH, active_hwnd)
-    monitor_index := GetMonitorIndexFromWindow(active_hwnd)
-    MonitorGetWorkArea(monitor_index, &monX, &monY, &monRight, &monBottom)
-    newH := winH + (winY - monY)
-    WinMove(winX, monY, winW, newH, active_hwnd)
-  } else {     
+  }
+  else if GetKeyState("LAlt", "P") {      
+    ExtendToMonitorEdge("top")            ; [⇪]+[LAlt]+[↑]: Extend window to the top of the monitor
+  } else {
     MoveActiveWindow(0, -50)              ; [⇪]+[↑]: Move window up
-  } 
+  }
 }
 
 CapsLock & Down:: {
   if GetKeyState("LCtrl", "P") {
     ResizeWindowBorders(0, -5, -5, 0)       ; [⇪]+[LCtrl]+[↓]: Shrink window vertically by 10%
   }
-  else if GetKeyState("LAlt", "P") {
-    ResizeWindowBorders(-5, 0, 0, -5)     ; [⇪]+[LAlt]+[↓]: Extend window to the bottom of the monitor
-    active_hwnd := WinExist("A")
-    if IsExcludedWindow(active_hwnd)
-      return
-    WinGetPos(&winX, &winY, &winW, &winH, active_hwnd)
-    monitor_index := GetMonitorIndexFromWindow(active_hwnd)
-    MonitorGetWorkArea(monitor_index, &monX, &monY, &monRight, &monBottom)
-    newH := monBottom - winY
-    WinMove(winX, winY, winW, newH, active_hwnd)
+  else if GetKeyState("LAlt", "P") {        
+    ExtendToMonitorEdge("bottom")           ; [⇪]+[LAlt]+[↓]: Extend window to the bottom of the monitor
   }
   else {
     MoveActiveWindow(0, 50)               ; [⇪]+[↓]: Move window down
@@ -91,23 +72,23 @@ CapsLock & Left:: {
     ResizeWindowBorders(-5, 0, 0, -5)       ; [⇪]+[LCtrl]+[←]: Shrink window horizontally by 10%
   }
   else if GetKeyState("LAlt", "P") {
-    ResizeWindowBorders(-5, 0, -5, 0)     ; [⇪]+[LAlt]+[←]: Shrink window horizontally by 10%
+    ExtendToMonitorEdge("left")             ; [⇪]+[LAlt]+[←]: Extend window to the left of the monitor
   }
   else {
-    MoveActiveWindow(-50, 0)              ; [⇪]+[←]: Move window left
+    MoveActiveWindow(-50, 0)                ; [⇪]+[←]: Move window left
   }
 }
 
 CapsLock & Right:: {
   if GetKeyState("LCtrl", "P") {
-    ResizeWindowBorders(5, 0, 0, 5)       ; [⇪]+[LCtrl]+[→]: Expand window horizontally by 10%
+    ResizeWindowBorders(5, 0, 0, 5)         ; [⇪]+[LCtrl]+[→]: Expand window horizontally by 10%
   }
   else if GetKeyState("LAlt", "P") {
-    ResizeWindowBorders(-5, 0, -5, 0)     ; [⇪]+[LAlt]+[→]: Shrink window horizontally by 10%
+    ExtendToMonitorEdge("right")            ; [⇪]+[LAlt]+[→]: Extend window to the right of the monitor
   }
   else {
-    MoveActiveWindow(50, 0)               ; [⇪]+[→]: Move window right
-  }             
+    MoveActiveWindow(50, 0)                 ; [⇪]+[→]: Move window right
+  }
 }
 
 ; ╭───────────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -117,7 +98,7 @@ CapsLock & Right:: {
 SqueezeAndPose(screen_percent, resize_percent := 0) {
   ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Squeezes, Poses, or Resizes the active window relative to its current monitor.                              │
-  ; │                                                                                                             │
+  ; ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
   ; │ Parameters:                                                                                                 │
   ; │   screen_percent: If > 0, resizes the window to this percentage of the monitor's work area.                 │
   ; │   resize_percent: Adjusts the window's size by this percentage of the monitor's work area.                  │
@@ -161,7 +142,7 @@ SqueezeAndPose(screen_percent, resize_percent := 0) {
 ResizeWindowBorders(left_percent := 0, bottom_percent := 0, top_percent := 0, right_percent := 0) {
   ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Resizes the active window by moving its borders by a specified percentage of the current monitor's size.    │
-  ; │                                                                                                             │
+  ; ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
   ; │ Parameters (in percent of monitor size):                                                                    │
   ; │   left_percent:   Positive expands left, negative shrinks from the left.                                    │
   ; │   bottom_percent: Positive expands down, negative shrinks from the bottom.                                  │
@@ -171,12 +152,11 @@ ResizeWindowBorders(left_percent := 0, bottom_percent := 0, top_percent := 0, ri
   ; Get the active window handle and its current position/size
 
   ; Cancel operation if the active window is a Remote Deskto Connection or a Snap Assist window
-  if (WinGetClass("A") = "TscShellContainerClass" or WinGetTitle("A") = "Snap Assist" or WinGetClass("A")="XamlExplorerHostIslandWindow") {
+  if (WinGetClass("A") = "TscShellContainerClass" or WinGetTitle("A") = "Snap Assist" or WinGetClass("A") = "XamlExplorerHostIslandWindow") {
     return
   }
   active_hwnd := WinGetID("A")
-  ; active_hwnd := WinExist("A")
-  
+
   if IsExcludedWindow(active_hwnd)
     return
 
@@ -200,14 +180,12 @@ ResizeWindowBorders(left_percent := 0, bottom_percent := 0, top_percent := 0, ri
   newW := winW + leftDelta + rightDelta
   newH := winH + topDelta + bottomDelta
 
-  ;MsgBox("Resizing window: " . active_hwnd . "`n" . "Old xy: " . winX . "x" . winY . "`nOld WH: " . winW . "x" . winH . "`nNew Position: (" . newX . ", " . newY . ")`n" . "New Size: " . newW . "x" . newH)
-  
   ; Ensure the window does not become smaller than a minimum size
-  if (newW < 100) 
+  if (newW < 100)
     newW := 100
-  if (newH < 100) 
+  if (newH < 100)
     newH := 100
-  
+
   ; WinRestore(active_hwnd)
   WinMove(newX, newY, newW, newH, active_hwnd)
 }
@@ -215,10 +193,10 @@ ResizeWindowBorders(left_percent := 0, bottom_percent := 0, top_percent := 0, ri
 MoveActiveWindow(leftDelta := 0, topDelta := 0) {
   ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Moves the active window by the specified pixel amounts.                                                     │
-  ; │                                                                                                             │
+  ; ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
   ; │ Parameters (in pixels):                                                                                     │
   ; │   leftDelta: Positive moves right, negative moves left.                                                     │
-  ; │   topDelta:  Positive moves down, negative moves up.                                                       │
+  ; │   topDelta:  Positive moves down, negative moves up.                                                        │
   ; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
   active_hwnd := WinExist("A")
   if IsExcludedWindow(active_hwnd)
@@ -238,6 +216,31 @@ MoveActiveWindow(leftDelta := 0, topDelta := 0) {
   WinMove(newX, newY, , , active_hwnd)
 }
 
+ExtendToMonitorEdge(direction) {
+  ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Extends the active window to the edge of the monitor in the specified direction.                             │
+  ; ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  ; │ Parameters:                                                                                                 │
+  ; │   direction: "left", "right", "top", or "bottom".                                                           │
+  ; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+  active_hwnd := WinExist("A")
+  if IsExcludedWindow(active_hwnd)
+    return
+
+  WinGetPos(&winX, &winY, &winW, &winH, active_hwnd)
+  monitor_index := GetMonitorIndexFromWindow(active_hwnd)
+  MonitorGetWorkArea(monitor_index, &monX, &monY, &monRight, &monBottom)
+
+  if (direction = "left") {
+    WinMove(monX, winY, winW + (winX - monX), winH, active_hwnd)
+  } else if (direction = "right") {
+    WinMove(winX, winY, monRight - winX, winH, active_hwnd)
+  } else if (direction = "top") {
+    WinMove(winX, monY, winW, winH + (winY - monY), active_hwnd)
+  } else if (direction = "bottom") {
+    WinMove(winX, winY, winW, monBottom - winY, active_hwnd)
+  }
+}
 HandleWindowDrag() {
   ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Handles moving a window with LWin + Left Mouse Button.                                          │
@@ -461,30 +464,30 @@ GetMonitorIndexFromWindow(windowHandle) {
 }
 
 IsExcludedWindow(active_hwnd) {
-    ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-    ; │ Checks if a window should be ignored by this script to prevent unintended behavior.                         │
-    ; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-    if !active_hwnd
-        return true
+  ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Checks if a window should be ignored by this script to prevent unintended behavior.                         │
+  ; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+  if !active_hwnd
+    return true
 
-    winClass := WinGetClass(active_hwnd)
-    winTitle := WinGetTitle(active_hwnd)
+  winClass := WinGetClass(active_hwnd)
+  winTitle := WinGetTitle(active_hwnd)
 
-    ; Add any window classes, titles, or executables to this list to exclude them.
-    excludedClasses := ["TscShellContainerClass", "XamlExplorerHostIslandWindow", "Windows.UI.Core.CoreWindow", "Shell_TrayWnd"]
-    excludedTitles := ["Snap Assist"]
+  ; Add any window classes, titles, or executables to this list to exclude them.
+  excludedClasses := ["TscShellContainerClass", "XamlExplorerHostIslandWindow", "Windows.UI.Core.CoreWindow", "Shell_TrayWnd"]
+  excludedTitles := ["Snap Assist", thisapp_name . " - About"]
 
-    for _, title in excludedTitles {
-        if InStr(winTitle, title)
-            return true
-    }
+  for _, title in excludedTitles {
+    if InStr(winTitle, title)
+      return true
+  }
 
-    for _, class in excludedClasses {
-        if InStr(winClass, class)
-            return true
-    }
+  for _, class in excludedClasses {
+    if InStr(winClass, class)
+      return true
+  }
 
-    return false
+  return false
 }
 
 ToggleActiveWindowMaximize() {

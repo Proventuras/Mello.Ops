@@ -67,3 +67,17 @@ LaunchNotion(*) {
     }
   }
 }
+
+LaunchApp(appName) {
+  For app in ComObject("Shell.Application").NameSpace("shell:AppsFolder").Items
+  {
+    ; myApps.= app.Name ": " app.Path "`n"
+    If (app.Name = appName)
+    {
+      app.InvokeVerb("open")
+      ; Run "explorer shell:appsFolder\" app.Path  ; This is the old way to launch apps
+      Return
+    }
+  }
+  ; MsgBox("Available Apps:`n" myApps, "Available Apps", 64)
+}

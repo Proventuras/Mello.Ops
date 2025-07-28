@@ -112,7 +112,8 @@ CapsLock & o::
   If (retKeyHook = "c") {
     WiseGui(OptionWindow)
     SplashGUI("Starting VS Code...", 2000)
-    Run "code.cmd"
+    LaunchApp("Visual Studio Code")
+    ; Run "cmd.exe /c code.cmd"
   }
   Else If (retKeyHook = "e") {
     WiseGui(OptionWindow)
@@ -122,7 +123,8 @@ CapsLock & o::
   Else If (retKeyHook = "n") {
     WiseGui(OptionWindow)
     SplashGUI("Starting Notion...", 2000)
-    LaunchNotion()
+    LaunchApp("Notion")
+    ; LaunchNotion()
   }
   Else If (retKeyHook = "o") {
     WiseGui(OptionWindow)

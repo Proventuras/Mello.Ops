@@ -53,16 +53,17 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   ; Notion-specific hotkeys
   #HotIf WinActive("ahk_exe Notion.exe")
   app_notion := "✏️ Notion"
-  F13:: Click
-  F14:: ModalMsg "", app_notion, 2
-  F15:: ModalMsg "", app_notion, 2
+  F13:: Send "^+{h}"                           ; Open current page in full screen
+  F14:: Send "{Home}{Enter}>{Space}"              ; Convert to a Toggle text block
+  F15:: Send "^+L"                                ; Toggle between light and dark mode
   F16:: ModalMsg "", app_notion, 2
-  F17:: ModalMsg "", app_notion, 2
-  F18:: ModalMsg "", app_notion, 2
-  F19:: ModalMsg "", app_notion, 2
-  F20:: ModalMsg "", app_notion, 2   ; /block equation
-  F21:: ModalMsg "", app_notion, 2   ; /blockequation
-  F22:: ModalMsg "", app_notion, 2   ; /turntoggleheading2
+  F17:: Send "{Home}{Enter}{# 2}{Space}>{Space}"  ; Convert to a Toggle Heading 2
+  F18:: Send "^+L"                              ; Toggle between light and dark mode
+  F19:: Send "{Home}{Enter}{# 3}{Space}>{Space}"  ; Convert to a Toggle Heading 3
+  F20:: ModalMsg "", app_notion, 2
+  F21:: ModalMsg "", app_notion, 2
+  F22:: ModalMsg "", app_notion, 2
+  F23:: Send "^{/}"                   ; Open Format Menu
   #HotIf
 
   ; MS Word-specific hotkeys
@@ -151,7 +152,7 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   app_msolk_new := "📬 NEW Outlook"
   F13:: Send "^q"                                       ; Mark as Read
   F14:: {
-    if WinActive(,"Calendar -") {
+    if WinActive(, "Calendar -") {
       Send "^!{Left}"                                   ; If in Calendar view - Previous week (This was changed from Alt+Up to Ctrl+Alt+Left)
     } else {
       Send "^,"                                         ; If in Mail view - Previous Message
@@ -159,7 +160,7 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   }
   F15:: ModalMsg "", app_msolk_new
   F16:: {
-    if WinActive(,"Calendar -") {
+    if WinActive(, "Calendar -") {
       Send "^!{Right}"                                  ; If in Calendar view - Next week (This was changed from Alt+Down to Ctrl+Alt+Right)
     } else {
       Send "^."                                         ; If in Mail view - Next Message
@@ -267,10 +268,7 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   app_msedge := "🧭 MS Edge"
   F13:: Send "^+{v}"                                    ; Ctrl+Shift+V to Paste as plain text
   F14:: Send "^+{Tab}"                                  ; Ctrl+Shift+Tab to switch to the previous tab
-  F15:: {                                               ; Ctrl+Shift+U to Read Out Loud
-    ModalMsg("MS Edge: Read Out Loud...", 2000)
-    Send "^+{u}"
-  }
+  F15:: Send "^+{u}"                                    ; Ctrl+Shift+U to Read Out Loud
   F16:: Send "^{Tab}"                                   ; Ctrl+Tab to switch to the next tab
   F18:: ModalMsg "", app_msedge
   F17:: Send "{Home}"                                   ; "{Home}" to go to the top of the page

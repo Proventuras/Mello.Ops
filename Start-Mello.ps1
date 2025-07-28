@@ -18,7 +18,7 @@ $AHKExecutableName = "AutoHotkey32.exe"
 $AHKBinPath = Join-Path -Path $InstallDir -ChildPath "ahkbin"
 $Arguments = Join-Path -Path $InstallDir -ChildPath "Mello.Ops.ahk"
 $Description = "Start Mello.Ops"
-$IconPath = Join-Path -Path $InstallDir -ChildPath "media\icons\mello-leaf.ico"
+$IconPath = Join-Path -Path $InstallDir -ChildPath "media\icons\Mello.Ops.ico"
 $StartMenuFolderName = "Mello"
 $AHKZipUrl = "https://www.autohotkey.com/download/2.0/AutoHotkey_2.0.19.zip"
 $AHKZipPath = Join-Path -Path $InstallDir -ChildPath "AutoHotkey.zip"
@@ -198,7 +198,7 @@ function Run-FromLocal {
   $InstallDir = $PSScriptRoot
   $AHKBinPath = Join-Path -Path $InstallDir -ChildPath "ahkbin"
   $Arguments = Join-Path -Path $InstallDir -ChildPath "Mello.Ops.ahk"
-  $IconPath = Join-Path -Path $InstallDir -ChildPath "media\icons\mello-leaf.ico"
+  $IconPath = Join-Path -Path $InstallDir -ChildPath "media\icons\Mello.Ops.ico"
   $TargetPath = Join-Path -Path $AHKBinPath -ChildPath $AHKExecutableName
 
   # Ensure AutoHotkey is downloaded and extracted to the local ahkbin.

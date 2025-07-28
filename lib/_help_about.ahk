@@ -30,7 +30,7 @@ ShowHelpAbout(*) {
   ;   mainTab.Move("w" . (dlg.ClientPos.W - 16) . " h" . (dlg.ClientPos.H - 80)),
   ;   aboutDlg["StatusBar"].Move("w" . dlg.ClientPos.W)
   ; ))
-  
+
   ; Prevent attempts handle the "Size" event to ignore resizing from WinMove
   aboutDlg.OnEvent("Size", (*) => aboutDlg.Show("w" dlgWidth " h" dlgHeight))
 }
@@ -78,15 +78,19 @@ ShowAboutDialog(*) {
   aboutDlg.Add("StatusBar", "x0 y540 w750 h30 vStatusBar", "  Hit the [Esc] key to close this window.")
 
   ; Tab Control
+  aboutDlg.SetFont("q5 s10", "Segoe UI")
   mainTab := aboutDlg.Add("Tab3", "x8 y42 w748 h520",
-    ["About      ",
-      "Hotkeys         ",
-      "Hotstrings      ",
-      "Arpeggios       ",
-      "Higher F-Keys   ",
-      "Other Options   "])
+    ["About",
+      "Hotkeys  ",
+      "Hotstrings  ",
+      "Window Management  ",
+      "Arpeggios  ",
+      "Higher F-Keys  ",
+      "Other Options"])
 
-  ; Tab 1 - About
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 1 - About                                                                         │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
   mainTab.UseTab(1)
   ; Logo and Title, version number, and license
   aboutDlg.Add("Picture", "x16 y74 w48 h48", A_ScriptDir "\media\icons\Mello.Ops.ico")
@@ -103,10 +107,10 @@ ShowAboutDialog(*) {
   aboutDlg.Add("GroupBox", "x72 y232 w500 h56", "")
   aboutDlg.SetFont("Bold Italic s14", "Segoe UI")
   aboutDlg.Add("Text", "x80 y250 w400 h23 ", "Chill. Flow. Repeat.")
-  
+
   ; Horizontal Line
   ; aboutDlg.Add("menu", "x16 y200 w732 h1 c353881")
-  
+
   ; Credit Section and Links to other resources
   aboutDlg.SetFont("c039314 Bold q5 s11", "Segoe UI")
   aboutDlg.Add("Text", "x72 y405 w600 h23", "Credits and Resources")
@@ -120,19 +124,20 @@ ShowAboutDialog(*) {
     "<a href=`"https://github.com/FuPeiJiang/VD.ahk/tree/v2_port`">VD.ahk library</a> by <a href=`"https://github.com/FuPeiJiang`">FuPeiJiang</a>")
   ; aboutDlg.Add("Link", "x72 y270 w300 h23",
   ; "<a href=`"https://github.com/Ciantic/VirtualDesktopAccessor`">VirtualDesktopAccessor</a> by <a href=`"https://github.com/Ciantic`">Ciantic</a>")
-
-  ; Tab 2 - Hotkeys
+  
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 2 - Hotkeys                                                                       │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
   mainTab.UseTab(2)
   ; aboutDlg.SetFont("norm s11", "Segoe UI")
   ; aboutDlg.Add("Text", "x16 y78 w690 h26", "Hotkeys")
-  aboutDlg.SetFont("norm s11", "Segoe UI")
-  aboutDlg.Add("Text", "x16 y74 w705 h23", "Hotkeys are synonymous to keyboard shortcuts. Go ahead and try them out!")
-  ; aboutDlg.Add("Text", "x16 y120 w720 h23", "You can also add your own hotkeys in the script file, or use the auxiliary hotkeys feature to create custom hotkeys on the fly.")
+  aboutDlg.SetFont("Bold s11", "Segoe UI")
+  aboutDlg.Add("Text", "x16 y74 w705 h23", "Hotkeys = keyboard shortcuts. Go ahead and try them out!")
+  
   ; Add ListView for Hotkeys
-  ; aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
+  aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
   lv_corehkeys := aboutDlg.Add("ListView", "r16 w732 -LV0x10 -Multi NoSort c353881", ["Action", "Hotkey", "Description"])
   lv_corehkeys.Opt("+Report") ; +Sort")
-  ; Set the column widths
   
   ; Example hotkeys - replace/add as needed for your project
   lv_corehkeys.Opt("-Redraw")
@@ -141,58 +146,49 @@ ShowAboutDialog(*) {
   lv_corehkeys.Add(, "Sleep", "[Ctrl] + [⊞] + [Alt] + [F12]`t", "Put this system to sleep")
   lv_corehkeys.Add(, thisapp_name " Help", "[Ctrl] + [⊞] + [Alt] + [F1]`t", "Display this dialog")
   lv_corehkeys.Add(, "Open the user's folder", "[⊞] + [F]`t", "Open the user's directory in File Explorer")
-  
-  lv_corehkeys.Add(, "", "", "")
-  lv_corehkeys.Add(, "**Window Management**", "", "")
   lv_corehkeys.Add(, "Edit this script", "[Ctrl] + [⊞] + [Alt] + [E]`t", "Open the main " thisapp_name " script (default editor)")
   lv_corehkeys.Add(, "Open the " thisapp_name " folder", "[Ctrl] + [⊞] + [Alt] + [F]`t", "Open the " thisapp_name " folder in File Explorer")
   lv_corehkeys.Add(, "Windows Terminal", "[Ctrl] + [Alt] + [T]`t", "Open or focus the Windows Terminal window")
   lv_corehkeys.Add(, "Windows Terminal (Elevated)", "[Ctrl] + [Shift] + [Alt] + [T]`t", "Open an elevated Windows Terminal instance")
   lv_corehkeys.Add(, "Open Calculator", "2 × [Right_Ctrl]`t", "Open or focus the Calculator app")
-  lv_corehkeys.Add(, "Resize Window to 70%", "[CapsLock] + [/]`t", "Resize the active window to 70% of the screen size.")
-  lv_corehkeys.Add(, "Decrease Window Size", "[CapsLock] + [LBracket]`t", "Decrease active window size by 5%.")
-  lv_corehkeys.Add(, "Increase Window Size", "[CapsLock] + [RBracket]`t", "Increase active window size by 5%.")
-  lv_corehkeys.Add(, "Move Window Up", "[CapsLock] + [↑]`t", "Move the active window up.")
-  lv_corehkeys.Add(, "Move Window Down", "[CapsLock] + [↓]`t", "Move the active window down.")
-  lv_corehkeys.Add(, "Move Window Left", "[CapsLock] + [←]`t", "Move the active window left.")
-  lv_corehkeys.Add(, "Move Window Right", "[CapsLock] + [→]`t", "Move the active window right.")
-  lv_corehkeys.Add(, "Expand Window Vertically", "[CapsLock] + [Ctrl] + [↑]`t", "Expand the active window vertically.")
-  lv_corehkeys.Add(, "Shrink Window Vertically", "[CapsLock] + [Ctrl] + [↓]`t", "Shrink the active window vertically.")
-  lv_corehkeys.Add(, "Expand Window Horizontally", "[CapsLock] + [Ctrl] + [→]`t", "Expand the active window horizontally.")
-  lv_corehkeys.Add(, "Shrink Window Horizontally", "[CapsLock] + [Ctrl] + [←]`t", "Shrink the active window horizontally.")
+
   lv_corehkeys.ModifyCol() ; Auto-size the first column
   lv_corehkeys.ModifyCol(2) ; Auto-size the second column
   lv_corehkeys.ModifyCol(3)
   lv_corehkeys.Opt("+Redraw")
 
-  ; Tab 3 - Hotstrings
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 3 - Hotstrings                                                                    │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
   mainTab.UseTab(3)
   ; aboutDlg.SetFont("Bold s10", "Segoe UI")
   ; aboutDlg.Add("Text", "x16 y70 w690 h30", "Hotstrings")
+  aboutDlg.SetFont("c000000 Bold q5 s11", "Segoe UI")
+  aboutDlg.Add("Text", "x16 y74 w705 h54", "Hotstrings = string replacements. Just hit [End] or [Enter] to expand them!")
   aboutDlg.SetFont("c000000 Norm q5 s11", "Segoe UI")
-  aboutDlg.Add("Text", "x16 y74 w705 h54", "Hotstrings are basically aliases or string replacements. Just type the hotsring followed by a trigger key (like [Space] or [Enter]) and it will be replaced with the corresponding text.")
 
   ; --- Radio Buttons and Dynamic ListViews ---
   ; GroupBox for visual clarity (optional)
-  aboutDlg.SetFont("norm s10", "Segoe UI")
-  aboutDlg.Add("GroupBox", "x16 y120 w732 h50", "Hotstring Groups")
-
+  aboutDlg.SetFont("Bold s10", "Segoe UI")
+  aboutDlg.Add("GroupBox", "x16 y100 w732 h50", "Hotstring Groups")
+  
   ; Radio Buttons (horizontal)
-  hs_rb_ansi := aboutDlg.Add("Radio", "x32 y140 w90 h23 vhs_rb_ansi", "ANSI")
-  hs_rb_kaomoji := aboutDlg.Add("Radio", "x120 y140 w90 h23 vhs_rb_kaomoji", "Kaomoji")
-  hs_rb_emoji := aboutDlg.Add("Radio", "x220 y140 w90 h23 vhs_rb_emoji", "Emojis")
-  hs_rb_boxes := aboutDlg.Add("Radio", "x320 y140 w100 h23 vhs_rb_boxes", "Tables `& Boxes")
-  hs_rb_custom := aboutDlg.Add("Radio", "x460 y140 w90 h23 vhs_rb_custom", "Custom")
+  aboutDlg.SetFont("Norm s10", "Segoe UI")
+  hs_rb_ansi := aboutDlg.Add("Radio", "x32 y120 w90 h23 vhs_rb_ansi", "ANSI")
+  hs_rb_kaomoji := aboutDlg.Add("Radio", "x120 y120 w90 h23 vhs_rb_kaomoji", "Kaomoji")
+  hs_rb_emoji := aboutDlg.Add("Radio", "x220 y120 w90 h23 vhs_rb_emoji", "Emojis")
+  hs_rb_boxes := aboutDlg.Add("Radio", "x320 y120 w100 h23 vhs_rb_boxes", "Tables `& Boxes")
+  hs_rb_custom := aboutDlg.Add("Radio", "x460 y120 w90 h23 vhs_rb_custom", "Custom")
 
   hs_rb_ansi.Value := true ; Default selection
   aboutDlg.SetFont("c000000 Norm q5 s11", "Segoe UI")
-  aboutDlg.Add("Text", "x16 y175 w732 h54 vhs_rb_text", "Aux Hotstrings include optional expansions and modifiers for advanced use.")
+  aboutDlg.Add("Text", "x16 y155 w732 h54 vhs_rb_text", "Aux Hotstrings include optional expansions and modifiers for advanced use.")
 
   ; ListViews for each category (stacked, only one visible at a time)
 
   ; ANSI/ASCII Alt Codes
-  aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
-  hs_lv_ansi := aboutDlg.Add("ListView", "x16 y205 w732 r12 vhs_lv_ansi", ["Hotstring", "Replacement", "Comments"])
+  aboutDlg.SetFont("c353881 Norm q5 s10", "Segoe UI")
+  hs_lv_ansi := aboutDlg.Add("ListView", "x16 y185 w732 r15 vhs_lv_ansi", ["Hotstring", "Replacement", "Comments"])
   hs_lv_ansi.Opt("+Report") ; +Sort")
   hs_lv_ansi.Opt("-Redraw")
   hs_lv_ansi.Add(, "`!bullet", "•", "Standard paragraph bullet")
@@ -232,8 +228,8 @@ ShowAboutDialog(*) {
   hs_lv_ansi.Opt("+Redraw")
 
   ; Japanese Emoticons (Kaomoji)  aboutDlg.SetFont("c2c6934 Norm q5 s11", "Segoe UI")
-  aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
-  hs_lv_kaomoji := aboutDlg.Add("ListView", "x16 y205 w732 r12 vhs_lv_kaomoji", ["Hotstring", "Replacement", "Comments"])
+  ; aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
+  hs_lv_kaomoji := aboutDlg.Add("ListView", "x16 y185 w732 r12 vhs_lv_kaomoji", ["Hotstring", "Replacement", "Comments"])
   hs_lv_kaomoji.Opt("+Report")
   hs_lv_kaomoji.Opt("-Redraw")
   hs_lv_kaomoji.Add(, "`!idk", "¯\\(°_o)/¯", "")
@@ -246,11 +242,11 @@ ShowAboutDialog(*) {
   hs_lv_kaomoji.ModifyCol(2) ; Auto-size the second column
   hs_lv_kaomoji.ModifyCol(3, 100)
   hs_lv_kaomoji.Opt("+Redraw")
-
+  hs_lv_kaomoji.Visible := false
 
   ; Emojis/
-  aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
-  hs_lv_emoji := aboutDlg.Add("ListView", "x16 y205 w732 r12 vhs_lv_emoji", ["Hotstring", "Replacement", "Comments"])
+  ; aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
+  hs_lv_emoji := aboutDlg.Add("ListView", "x16 y185 w732 r12 vhs_lv_emoji", ["Hotstring", "Replacement", "Comments"])
   hs_lv_emoji.Opt("+Report")
   hs_lv_emoji.Opt("-Redraw")
   hs_lv_emoji.Add(, "`!smile", "😀", "Emoji")
@@ -289,10 +285,11 @@ ShowAboutDialog(*) {
   hs_lv_emoji.ModifyCol(2, 100)
   hs_lv_emoji.ModifyCol(3, 100)
   hs_lv_emoji.Opt("+Redraw")
+  hs_lv_emoji.Visible := false
 
   ; ASCII Art / Boxes
-  aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
-  hs_lv_boxes := aboutDlg.Add("ListView", "x16 y205 w732 r12 vhs_lv_boxes", ["Hotstring", "Replacement", "Comments"])
+  ; aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
+  hs_lv_boxes := aboutDlg.Add("ListView", "x16 y185 w732 r12 vhs_lv_boxes", ["Hotstring", "Replacement", "Comments"])
   hs_lv_boxes.Opt("+Report")
   hs_lv_boxes.Opt("-Redraw")
   hs_lv_boxes.Add(, "##table##", "A simple table", "")
@@ -310,8 +307,9 @@ ShowAboutDialog(*) {
   hs_lv_boxes.ModifyCol(2) ; Auto-size the second column
   hs_lv_boxes.ModifyCol(3, 100)
   hs_lv_boxes.Opt("+Redraw")
+  hs_lv_boxes.Visible := false
 
-  hs_lv_custom := aboutDlg.Add("ListView", "x16 y205 w732 r12 vhs_lv_custom", ["Hotstring", "Example Replacement", "Comments"])
+  hs_lv_custom := aboutDlg.Add("ListView", "x16 y185 w732 r12 vhs_lv_custom", ["Hotstring", "Example Replacement", "Comments"])
   hs_lv_custom.Opt("+Report")
   hs_lv_custom.Opt("-Redraw")
   hs_lv_custom.Add(, "`!me", "[Your Name]", "")
@@ -349,9 +347,55 @@ ShowAboutDialog(*) {
   hs_rb_emoji.OnEvent("Click", hs_switchListView)
   hs_rb_custom.OnEvent("Click", hs_switchListView)
 
-
-  ; Tab 4 - Arpeggios
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 4 - Window Management                                                             │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
   mainTab.UseTab(4)
+  aboutDlg.SetFont("c000000 Bold q5 s11", "Segoe UI")
+  aboutDlg.Add("Text", "x16 y74 w732 h60", "Give yourself more control to the size and location of an active window with the CapsLock(⇪) key!")
+
+  ; --- Radio Buttons and Dynamic ListViews ---
+  
+  ; GroupBox for visual clarity (optional)
+  aboutDlg.SetFont("c000000 Bold q5 s10", "Segoe UI")
+  aboutDlg.Add("GroupBox", "x16 y100 w732 h50", "Modality")
+
+  ; Radio Buttons (horizontal)
+  aboutDlg.SetFont("c000000 Norm q5 s10", "Segoe UI")
+  wm_rb_keeb := aboutDlg.Add("Radio", "x32 y120 w120 h23 ", "CapsLock ⇪ Only")
+  wm_rb_keyclick := aboutDlg.Add("Radio", "x172 y120 w200 h23 ", "CapsLock ⇪  + Mouse 🖱️ ")
+  
+  wm_rb_keeb.Value := true ; Default selection
+  ; ListViews for each category (stacked, only one visible at a time)
+  aboutDlg.SetFont("c353881 Norm q5 s10", "Segoe UI")
+  wm_lv_keeb := aboutDlg.Add("ListView","x16 y185 w732 r15 vwm_lv_keeb", ["Action", "Hotkey", "Description"])
+  wm_lv_keeb.Opt("+Report") ; +Sort")
+  wm_lv_keeb.Opt("-Redraw")
+  wm_lv_keeb.Add(, "Resize Window to 70%", "[CapsLock] + [/]`t", "Resize the window to 70% of the monitor.")
+  wm_lv_keeb.Add(, "Decrease Window Size", "[CapsLock] + [LBracket]`t", "Decrease window size by 5%.")
+  wm_lv_keeb.Add(, "Increase Window Size", "[CapsLock] + [RBracket]`t", "Increase window size by 5%.")
+  wm_lv_keeb.Add(, "Move Window Up", "[CapsLock] + [↑]`t", "Move the window up.")
+  wm_lv_keeb.Add(, "Move Window Down", "[CapsLock] + [↓]`t", "Move the window down.")
+  wm_lv_keeb.Add(, "Move Window Left", "[CapsLock] + [←]`t", "Move the window left.")
+  wm_lv_keeb.Add(, "Move Window Right", "[CapsLock] + [→]`t", "Move the window right.")
+  wm_lv_keeb.Add(, "Expand Window Vertically", "[CapsLock] + [Ctrl] + [↑]`t", "Expand the window vertically.")
+  wm_lv_keeb.Add(, "Shrink Window Vertically", "[CapsLock] + [Ctrl] + [↓]`t", "Shrink the window vertically.")
+  wm_lv_keeb.Add(, "Expand Window Horizontally", "[CapsLock] + [Ctrl] + [→]`t", "Expand the window horizontally.")
+  wm_lv_keeb.Add(, "Shrink Window Horizontally", "[CapsLock] + [Ctrl] + [←]`t", "Shrink the window horizontally.")
+  wm_lv_keeb.Add(, "Extend Window to Top", "[CapsLock] + [Alt] + [↑]`t", "Extend the window to the top of the monitor.")
+  wm_lv_keeb.Add(, "Extend Window to Bottom", "[CapsLock] + [Alt] + [↓]`t", "Extend the window to the bottom of the monitor.")
+  wm_lv_keeb.Add(, "Extend Window to Left", "[CapsLock] + [Alt] + [←]`t", "Extend the window to the left of the monitor.")
+  wm_lv_keeb.Add(, "Extend Window to Right", "[CapsLock] + [Alt] + [→]`t", "Extend the window to the right of the monitor.")
+  wm_lv_keeb.Add(, "Move Window to Center", "[CapsLock] + [Ctrl] + [M]`t", "Move the window to the center of the monitor.")
+
+  wm_lv_keeb.ModifyCol(1) ; Auto-size the first column
+  wm_lv_keeb.ModifyCol(2) ; Auto-size the second column
+  wm_lv_keeb.ModifyCol(3)
+  wm_lv_keeb.Opt("+Redraw")
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 5 - Arpeggios                                                                     │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
+  mainTab.UseTab(5)
   ; aboutDlg.SetFont("Bold s10", "Segoe UI")
   ; aboutDlg.Add("Text", "x16 y70 w690 h30", "Arpeggios")
   aboutDlg.SetFont("c000000 Norm q5 s11", "Segoe UI")
