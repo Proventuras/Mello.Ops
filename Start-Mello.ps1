@@ -184,7 +184,7 @@ function Install-FromUrl {
   }
 
   # Create the shortcut.
-  $WorkingDirectory = $InstallDir
+  # $WorkingDirectory = $InstallDir
   if (!(New-Shortcut -ShortcutPath $ShortcutPath -TargetPath $TargetPath -Arguments $Arguments -Description $Description -WorkingDirectory $InstallDir -IconPath $IconPath -ShortcutDisplayName $ShortcutDisplayName)) {
     Write-Error "Failed to create the shortcut. Exiting script."
     exit 1
@@ -216,18 +216,12 @@ function Run-FromLocal {
   }
 
   # Create the shortcut if it doesn't exist.
-  if (!(Test-Path -Path $ShortcutPath)) {
-    Write-Output "Shortcut '$ShortcutDisplayName' does not exist. Creating it now."
-    $WorkingDirectory = $InstallDir
-    if (!(New-Shortcut -ShortcutPath $ShortcutPath -TargetPath $TargetPath -Arguments $Arguments -Description $Description -WorkingDirectory $WorkingDirectory -IconPath $IconPath -ShortcutDisplayName $ShortcutDisplayName)) {
-      Write-Error "Failed to create the shortcut. Exiting script."
-      exit 1
-    }
-  }
+  New-Shortcut -ShortcutPath $ShortcutPath -TargetPath $TargetPath -Arguments $Arguments -Description $Description -WorkingDirectory $InstallDir -IconPath $IconPath -ShortcutDisplayName $ShortcutDisplayName -SilentlyContinue
 
   try {
     Start-Process -FilePath $ShortcutPath
     Write-Output "Shortcut '$ShortcutDisplayName' started."
+    Write-Information -MessageData "If the script does not launch, you may need to unblock the $($TargetPath) file" InformationAction Continue
   }
   catch {
     Write-Error "Failed to start the shortcut: $($_.Exception.Message)"
