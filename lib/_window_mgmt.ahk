@@ -1,6 +1,9 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
+SendMode "Input"
 SetWorkingDir A_ScriptDir
+SetWinDelay 2
+CoordMode "Mouse"
 
 ; ╭════════════════════════════════════════════════════════════════════════════════════════════════════════════════─╮
 ; ║  WINDOW_MGR.AHK (v2502_beta)                                                                                    ║
@@ -39,19 +42,19 @@ CapsLock & Numpad9:: SnapActiveWindow("top", "right", "half")
 ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 ; │ Sizing and Posing                                                                                               │
 ; ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-CapsLock & /:: SqueezeAndPose(70)         ; [⇪]+[/]: Resize to 70% of the screen and center
-CapsLock & <:: SqueezeAndPose(0, -5)      ; [⇪]+[<]: Decrease size by 5% of the screen
-CapsLock & >:: SqueezeAndPose(0, 5)       ; [⇪]+[>]: Increase size by 5% of the screen
+CapsLock & /:: SqueezeAndPose(70)           ; [⇪]+[/]: Resize to 70% of the screen and center
+CapsLock & <:: SqueezeAndPose(0, -5)        ; [⇪]+[<]: Decrease size by 5% of the screen
+CapsLock & >:: SqueezeAndPose(0, 5)         ; [⇪]+[>]: Increase size by 5% of the screen
 
 ; --- Arrow Key Combinations ---
 CapsLock & Up:: {
   if GetKeyState("LCtrl", "P") {
-    ResizeWindowBorders(0, 5, 5, 0)       ; [⇪]+[LCtrl]+[↑]: Expand window vertically by 10%
+    ResizeWindowBorders(0, 5, 5, 0)         ; [⇪]+[LCtrl]+[↑]: Expand window vertically by 10%
   }
   else if GetKeyState("LAlt", "P") {      
-    ExtendToMonitorEdge("top")            ; [⇪]+[LAlt]+[↑]: Extend window to the top of the monitor
+    ExtendToMonitorEdge("top")              ; [⇪]+[LAlt]+[↑]: Extend window to the top of the monitor
   } else {
-    MoveActiveWindow(0, -50)              ; [⇪]+[↑]: Move window up
+    MoveActiveWindow(0, -50)                ; [⇪]+[↑]: Move window up
   }
 }
 
@@ -63,7 +66,7 @@ CapsLock & Down:: {
     ExtendToMonitorEdge("bottom")           ; [⇪]+[LAlt]+[↓]: Extend window to the bottom of the monitor
   }
   else {
-    MoveActiveWindow(0, 50)               ; [⇪]+[↓]: Move window down
+    MoveActiveWindow(0, 50)                 ; [⇪]+[↓]: Move window down
   }
 }
 
@@ -218,7 +221,7 @@ MoveActiveWindow(leftDelta := 0, topDelta := 0) {
 
 ExtendToMonitorEdge(direction) {
   ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-  ; │ Extends the active window to the edge of the monitor in the specified direction.                             │
+  ; │ Extends the active window to the edge of the monitor in the specified direction.                            │
   ; ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
   ; │ Parameters:                                                                                                 │
   ; │   direction: "left", "right", "top", or "bottom".                                                           │

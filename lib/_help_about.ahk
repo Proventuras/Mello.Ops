@@ -41,13 +41,38 @@ ShowAboutDialog(*) {
   ; Open process with query info rights
   hProcess := DllCall("OpenProcess", "UInt", 0x1000, "Int", false, "UInt", pid, "Ptr")
   if hProcess {
-    PROCESS_MEMORY_COUNTERS := Buffer(40, 0)
-    NumPut("UInt", 40, PROCESS_MEMORY_COUNTERS, 0) ; cb
-    if DllCall("psapi\GetProcessMemoryInfo", "Ptr", hProcess, "Ptr", PROCESS_MEMORY_COUNTERS.Ptr, "UInt", 40) {
-      ; For 32-bit AHK, PROCESS_MEMORY_COUNTERS.PrivateWorkingSetSize is at offset 32 (DWORD)
-      ; This is
-      workingSetSize := NumGet(PROCESS_MEMORY_COUNTERS, 32, "UInt")
-      memMB := Round(workingSetSize / 1024 / 1024, 2)
+    ; PROCESS_MEMORY_COUNTERS structure is 72 bytes on 64-bit, 40 bytes on 32-bit
+    structSize := (A_PtrSize = 8) ? 72 : 40
+
+    ; PROCESS_MEMORY_COUNTERS := Buffer(structSize, 0)
+    ; NumPut("UInt", structSize, PROCESS_MEMORY_COUNTERS, 0)
+    ; if DllCall("psapi\GetProcessMemoryInfo", "Ptr", hProcess, "Ptr", PROCESS_MEMORY_COUNTERS.Ptr, "UInt", structSize) {
+    ;   Offsets for PROCESS_MEMORY_COUNTERS (see MSDN)
+    ;   cnt := ""
+    ;   cnt .= "PageFaultCount: " NumGet(PROCESS_MEMORY_COUNTERS, 4, "UInt") "`n"
+    ;   cnt .= "PeakWorkingSetSize: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB`n"
+    ;   cnt .= "WorkingSetSize: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8 + A_PtrSize, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB`n"
+    ;   cnt .= "QuotaPeakPagedPoolUsage: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8 + 2*A_PtrSize, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB`n"
+    ;   cnt .= "QuotaPagedPoolUsage: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8 + 3*A_PtrSize, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB`n"
+    ;   cnt .= "QuotaPeakNonPagedPoolUsage: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8 + 4*A_PtrSize, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB`n"
+    ;   cnt .= "QuotaNonPagedPoolUsage: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8 + 5*A_PtrSize, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB`n"
+    ;   cnt .= "PagefileUsage: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8 + 6*A_PtrSize, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB`n"
+    ;   cnt .= "PeakPagefileUsage: " Round(NumGet(PROCESS_MEMORY_COUNTERS, 8 + 7*A_PtrSize, (A_PtrSize=8)?"UInt64":"UInt") / 1024, 2) " MB"
+    ;   MsgBox(cnt, "Process Memory Counters (MB)")
+    ; }
+
+    ; Get the active private working set and calculate in MB
+    PROCESS_MEMORY_COUNTERS := Buffer(structSize, 0)
+    NumPut("UInt", structSize, PROCESS_MEMORY_COUNTERS, 0)
+    if DllCall("psapi\GetProcessMemoryInfo", "Ptr", hProcess, "Ptr", PROCESS_MEMORY_COUNTERS.Ptr, "UInt", structSize) {
+      ; PrivateWorkingSetSize is at offset 32 (UInt64 for 64-bit, UInt for 32-bit)
+      ; if (A_PtrSize = 8) {
+      ;   workingSetSize := NumGet(PROCESS_MEMORY_COUNTERS, 32, "UInt64")
+      ; }
+      ; else {
+        workingSetSize := NumGet(PROCESS_MEMORY_COUNTERS, 32, "UInt")
+      ; }
+      memMB := Round( workingSetSize / (1024 * 1024) , 2)
     } else {
       memMB := "??"
     }
@@ -115,16 +140,23 @@ ShowAboutDialog(*) {
   aboutDlg.SetFont("c039314 Bold q5 s11", "Segoe UI")
   aboutDlg.Add("Text", "x72 y405 w600 h23", "Credits and Resources")
   aboutDlg.SetFont("c000000 Norm q5 s10", "Segoe UI")
-  aboutDlg.Add("Link", "x72 y430 w600 h23",
+  aboutDlg.Add("Picture", "x72 y430 w16 h16", A_ScriptDir "\media\icons\autohotkey.ico")
+  aboutDlg.Add("Link", "x96 y428 w400 h23",
     "AutoHotkey (version " A_AhkVersion ") is available at <a href=`"https://www.autohotkey.com`">autohotkey.com</a>")
-  aboutDlg.Add("Link", "x72 y450 w600 h23", "Icons by <a href=`"https://icons8.com`">icons8.com</a>")
-  aboutDlg.Add("Link", "x72 y470 w600 h23",
+
+  aboutDlg.Add("Picture", "x70 y450 w20 h20", A_ScriptDir "\media\icons\icons8.ico")
+  aboutDlg.Add("Link", "x96 y450 w600 h23", "Icons by <a href=`"https://icons8.com`">icons8.com</a>")
+
+  aboutDlg.Add("Picture", "x70 y472 w20 h20", A_ScriptDir "\media\icons\icons8-github-windows-10-16.png")
+  aboutDlg.Add("Link", "x96 y472 w600 h23",
     "<a href=`"https://www.autohotkey.com/boards/viewtopic.php?f=83&t=94044`">WiseGUI.ahk library</a> by <a href=`"https://www.autohotkey.com/boards/memberlist.php?mode=viewprofile&u=54&sid=f3bac845536fc1eace03994a9e73273e`">SKAN</a>")
-  aboutDlg.Add("Link", "x72 y490 w300 h23",
+
+  aboutDlg.Add("Picture", "x70 y492 w20 h20", A_ScriptDir "\media\icons\icons8-github-windows-10-16.png")
+  aboutDlg.Add("Link", "x96 y492 w300 h23",
     "<a href=`"https://github.com/FuPeiJiang/VD.ahk/tree/v2_port`">VD.ahk library</a> by <a href=`"https://github.com/FuPeiJiang`">FuPeiJiang</a>")
   ; aboutDlg.Add("Link", "x72 y270 w300 h23",
   ; "<a href=`"https://github.com/Ciantic/VirtualDesktopAccessor`">VirtualDesktopAccessor</a> by <a href=`"https://github.com/Ciantic`">Ciantic</a>")
-  
+
   ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Tab 2 - Hotkeys                                                                       │
   ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
@@ -133,12 +165,12 @@ ShowAboutDialog(*) {
   ; aboutDlg.Add("Text", "x16 y78 w690 h26", "Hotkeys")
   aboutDlg.SetFont("Bold s11", "Segoe UI")
   aboutDlg.Add("Text", "x16 y74 w705 h23", "Hotkeys = keyboard shortcuts. Go ahead and try them out!")
-  
+
   ; Add ListView for Hotkeys
   aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
   lv_corehkeys := aboutDlg.Add("ListView", "r16 w732 -LV0x10 -Multi NoSort c353881", ["Action", "Hotkey", "Description"])
   lv_corehkeys.Opt("+Report") ; +Sort")
-  
+
   ; Example hotkeys - replace/add as needed for your project
   lv_corehkeys.Opt("-Redraw")
   lv_corehkeys.Add(, "Reload and Restart " thisapp_name, "[Ctrl] + [⊞] + [Alt] + [R] ", "Reload and restart " thisapp_name)
@@ -171,7 +203,7 @@ ShowAboutDialog(*) {
   ; GroupBox for visual clarity (optional)
   aboutDlg.SetFont("Bold s10", "Segoe UI")
   aboutDlg.Add("GroupBox", "x16 y100 w732 h50", "Hotstring Groups")
-  
+
   ; Radio Buttons (horizontal)
   aboutDlg.SetFont("Norm s10", "Segoe UI")
   hs_rb_ansi := aboutDlg.Add("Radio", "x32 y120 w90 h23 vhs_rb_ansi", "ANSI")
@@ -355,7 +387,7 @@ ShowAboutDialog(*) {
   aboutDlg.Add("Text", "x16 y74 w732 h60", "Give yourself more control to the size and location of an active window with the CapsLock(⇪) key!")
 
   ; --- Radio Buttons and Dynamic ListViews ---
-  
+
   ; GroupBox for visual clarity (optional)
   aboutDlg.SetFont("c000000 Bold q5 s10", "Segoe UI")
   aboutDlg.Add("GroupBox", "x16 y100 w732 h50", "Modality")
@@ -364,11 +396,11 @@ ShowAboutDialog(*) {
   aboutDlg.SetFont("c000000 Norm q5 s10", "Segoe UI")
   wm_rb_keeb := aboutDlg.Add("Radio", "x32 y120 w120 h23 ", "CapsLock ⇪ Only")
   wm_rb_keyclick := aboutDlg.Add("Radio", "x172 y120 w200 h23 ", "CapsLock ⇪  + Mouse 🖱️ ")
-  
+
   wm_rb_keeb.Value := true ; Default selection
   ; ListViews for each category (stacked, only one visible at a time)
   aboutDlg.SetFont("c353881 Norm q5 s10", "Segoe UI")
-  wm_lv_keeb := aboutDlg.Add("ListView","x16 y185 w732 r15 vwm_lv_keeb", ["Action", "Hotkey", "Description"])
+  wm_lv_keeb := aboutDlg.Add("ListView", "x16 y185 w732 r15 vwm_lv_keeb", ["Action", "Hotkey", "Description"])
   wm_lv_keeb.Opt("+Report") ; +Sort")
   wm_lv_keeb.Opt("-Redraw")
   wm_lv_keeb.Add(, "Resize Window to 70%", "[CapsLock] + [/]`t", "Resize the window to 70% of the monitor.")

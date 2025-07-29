@@ -92,4 +92,4 @@ We love making Windows more fun and productive!
 
 ---
 
-**Accellerate and Chill**
+**Mello.Ops - Chill, flow, repeat.**

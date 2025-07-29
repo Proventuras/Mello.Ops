@@ -61,22 +61,45 @@ SplashGUI(message, timeout) {
   )
 }
 
+ShowArpeggioSplash(message) {
+  ; This function displays a splash screen with a message in the bottom right corner.
+  ; It uses a GUI to show the message and positions it at the bottom right of the active monitor.
+  ; The GUI will fade in and out, and it will not activate the window.
+  global arpeGUI, arpeGUIWidth, arpeGUIHeight
+
+  ; If the GUI already exists, destroy it first
+  If IsSet(arpeGUI) {
+    arpeGUI.Destroy()
+    arpeGUI := ""
+  }
+
+; Display a dialog in the bottom right corner with a list, fade in/out
+  arpeGUI := Gui("+AlwaysOnTop -Caption +ToolWindow")
+  arpeGUI.BackColor := "White"
+  arpeGUI.SetFont("s11", "Segoe UI")
+  arpeGUI.AddText("w250 left cGreen", "Press a Key to start an application:")
+  arpeGUI.SetFont("s11", "Segoe UI")
+  arpeGUI.AddText("w250 left cGray", message)
+  arpeGUI.Show("NoActivate AutoSize")
+  ; Position bottom right of active monitor
+  thisMonitor := MonitorGetWorkArea(, &thisMonLeft, &thisMonTop, &thisMonRight, &thisMonBottom)
+  arpeGUI.GetPos(&__, &__, &arpeGUIWidth, &arpeGUIHeight)
+  arpeGUI.Move(thismonRight - arpeGUIWidth - 20, thisMonBottom - arpeGUIHeight - 20)
+}
 ; ╭──────────────────────────────────────────╮
 ; │  [CapsLock]+[o]. OPEN APPLICTATION Mode  │
 ; ├──────────────────────────────────────────┤
+; │  [B] ✓ Beyond Compare 4                  │
 ; │  [C] ✓ Visual Studio Code                |
 ; │  [E] ✓ Epic Pen                          │
 ; │  [N] ✓ Notion                            │
 ; |  [O] ✓ Outlook                           │
-; |  [P] ✓ PowerPoint                        │
 ; |  [T] ✓ Windows Terminal                  │
 ; |  [!] ✓ Windows Terminal (ADMIN)          │
-; |  [W] ✓ Word                              │
-; |  [X] ✓ Excel                             │
 ; ├──────────────────────────────────────────┤
 ; │  TODO: Possible Candidates               │
-; │  [b] Bitwarden                           │
 ; │  [w] Terminal (WSL)                      │
+; │  [w] Warp Terminal                       │
 ; ╰──────────────────────────────────────────╯
 CapsLock & o::
 {
@@ -84,81 +107,90 @@ CapsLock & o::
   OptionWindow := "AppModeOptions"
 
   AppModeOptionsString := (
-    "[!] Windows Terminal (Admin)`n"
-    "[C] VS Code`n"
-    "[E] Epic Pen`n"
-    "[N] Notion`n"
-    "[O] Outlook`n"
-    "[P] PowerPoint`n"
-    "[T] Windows Terminal`n"
-    "[W] Word`n"
-    "[X] Excel"
+    "!`t Windows Terminal (Admin)"
+    "`nB`t Beyond Compare 4"
+    "`nC`t VS Code"
+    "`nE`t Epic Pen"
+    "`nN`t Notion"
+    "`nT`t Windows Terminal"
+    "`nW`t Warp Terminal"
   )
-  ; Display the options for the user
-  WiseGui(OptionWindow
-    , "Margins:       3,3,0,4"
-    , "Theme:,,," LoadPicture(app_ico, "Icon1", &ImageType)
-    , "FontMain:     S12 Bold, Arial"
-    , "MainText:     Press a key to start an app:"
-    , "MainAlign:    0"
-    , "FontSub:      S11 Norm, Segoe UI"
-    , "SubText:    " AppModeOptionsString
-    , "SubAlign:     -1"
-    , "Timer:        3500"
-  )
+  ShowArpeggioSplash(AppModeOptionsString)
 
+  ; Display the options for the user
+  ; WiseGui(OptionWindow
+  ;   , "Margins:       3,3,0,4"
+  ;   , "Theme:,,," LoadPicture(app_ico, "Icon1", &ImageType)
+  ;   , "FontMain:     S12 Bold, Arial"
+  ;   , "MainText:     Press a key to start an app:"
+  ;   , "MainAlign:    0"
+  ;   , "FontSub:      S11 Norm, Segoe UI"
+  ;   , "SubText:    " AppModeOptionsString
+  ;   , "SubAlign:     -1"
+  ;   , "Timer:        3500"
+  ; )
+
+  ; Begin the 4 second wait before fading out the GUI
   retKeyHook := KeyWaitAny()
 
-  If (retKeyHook = "c") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting VS Code...", 2000)
+  ; Fade Out
+  AW_BLEND := 0x00080000, AW_HIDE := 0x00010000
+  DllCall("user32.dll\AnimateWindow", "Ptr", arpeGUI.hwnd, "UInt", 250, "UInt", AW_BLEND | AW_HIDE)
+  arpeGUI.Destroy()
+  
+  ; If the user did not press a key, exit the function
+  if (retKeyHook = "") {
+    return
+  }
+  If (retKeyHook = "b") {
+    ShowActionSplash("Starting Beyond Compare 4...")
+    LaunchApp("Beyond Compare 4")
+  }
+  Else If (retKeyHook = "c") {
+    ShowActionSplash("Starting Visual Studio Code...")
     LaunchApp("Visual Studio Code")
-    ; Run "cmd.exe /c code.cmd"
   }
   Else If (retKeyHook = "e") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting Epic Pen...", 2000)
-    Run EnvGet("ProgramFiles(x86)") "\Epic Pen\EpicPen.exe"
+    ShowActionSplash("Starting Epic Pen...")
+    LaunchApp("Epic Pen")
   }
   Else If (retKeyHook = "n") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting Notion...", 2000)
+    ShowActionSplash("Starting Notion...")
     LaunchApp("Notion")
-    ; LaunchNotion()
   }
-  Else If (retKeyHook = "o") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting MS Outlook...", 2000)
-    Send "^!+#o"
-  }
-  Else If (retKeyHook = "p") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting MS PowerPoint...", 2000)
-    Send "^!+#p"
-  }
-  Else If (retKeyHook = "w") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting MS Word...", 2000)
-    Send "^!+#w"
-  }
-  Else If (retKeyHook = "x") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting MS Excel...", 2000)
-    Send "^!+#x"
-  }
+  ; Else If (retKeyHook = "o") {
+  ;   ShowActionSplash("Starting Outlook...")
+  ;   Send "^!+#o"
+  ; }
+  ; Else If (retKeyHook = "p") {
+  ;   WiseGui(OptionWindow)
+  ;   SplashGUI("Starting MS PowerPoint...", 2000)
+  ;   Send "^!+#p"
+  ; }
+  ; Else If (retKeyHook = "w") {
+  ;   WiseGui(OptionWindow)
+  ;   SplashGUI("Starting MS Word...", 2000)
+  ;   Send "^!+#w"
+  ; }
+  ; Else If (retKeyHook = "x") {
+  ;   WiseGui(OptionWindow)
+  ;   SplashGUI("Starting MS Excel...", 2000)
+  ;   Send "^!+#x"
+  ; }
   Else If (retKeyHook = "t") {
-    WiseGui(OptionWindow)
-    SplashGUI("Starting Terminal...", 2000)
+    ShowActionSplash("Starting Windows Terminal...")
     LaunchTerminal()
   }
+  Else If (retKeyHook = "w") {
+    ShowActionSplash("Starting Warp Terminal...")
+    LaunchApp("Warp")
+  }
   Else If (retKeyHook = "!") {
-    SplashGUI("Starting Terminal (Privileged)...", 2000)
+    ShowActionSplash("Starting Windows Terminal (Admin)...")
     Run "*RunAs wt.exe -w 0 new-tab --title Terminal(Admin) --suppressApplicationTitle"
   }
   Else {
-    MsgBox("Invalid key pressed: " retKeyHook)
-    WiseGui(OptionWindow)
-    ;Send "O" ; This is to respond to [LShift}+[o]; otherwise, nothing will be sent
+    ; MsgBox("Invalid key pressed: " retKeyHook)
   }
 }
 
