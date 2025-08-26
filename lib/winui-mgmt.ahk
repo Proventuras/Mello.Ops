@@ -6,9 +6,9 @@ SetWinDelay 2
 CoordMode "Mouse"
 
 ; ╭════════════════════════════════════════════════════════════════════════════════════════════════════════════════─╮
-; ║  WINDOW_MGR.AHK (v2502_beta)                                                                                    ║
-; ║  Manages the location and dimensions of the Active Window using performant DllCalls.                            ║
-; ║  Refactored for maximum readability, maintainability, and performance.                                          ║
+; ║  WINUI-MGMT.AHK                                                                                                 ║
+; ║    - Manages the location and dimensions of the Active Window using performant DllCalls.                        ║
+; ║    - Refactored for maximum readability, maintainability, and performance.                                      ║
 ; ╰═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╯
 
 ; ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮

@@ -8,6 +8,172 @@
   │                                                                    │
   ╰────────────────────────────────────────────────────────────────────╯
 */
+; class CPUInfo {
+;   static Name := ""
+;   static Manufacturer := ""
+;   static Description := ""
+;   static NumberOfCores := ""
+;   static NumberOfLogicalProcessors := ""
+;   static MaxClockSpeed := ""
+;   static Architecture := ""
+;   static ProcessorId := ""
+
+;   static Init() {
+;     for cpu in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_Processor") {
+;       CPUInfo.Name := cpu.Name
+;       CPUInfo.Manufacturer := cpu.Manufacturer
+;       CPUInfo.Description := cpu.Description
+;       CPUInfo.NumberOfCores := cpu.NumberOfCores
+;       CPUInfo.NumberOfLogicalProcessors := cpu.NumberOfLogicalProcessors
+;       CPUInfo.MaxClockSpeed := cpu.MaxClockSpeed
+;       CPUInfo.Architecture := cpu.Architecture
+;       CPUInfo.ProcessorId := cpu.ProcessorId
+;       break ; Only use the first CPU
+;     }
+;   }
+; }
+
+class ThisPC {
+  static CPUInfo := Map()
+  static RAM := ""
+  static OS := Map()
+  static Motherboard := Map()
+  static Network := []
+  static ExternalIP := ""
+  static Battery := Map()
+  static Uptime := ""
+
+  static CollectInfo() {
+    ThisPC.CPUInfo := ThisPC.CPUInfoClass()
+    ThisPC.RAM := ThisPC.GetRAMInfo()
+    ThisPC.OS := ThisPC.GetOSInfo()
+    ThisPC.Motherboard := ThisPC.GetMotherboardInfo()
+    ThisPC.Network := ThisPC.GetNetworkInfo()
+    ThisPC.ExternalIP := ThisPC.GetExternalIP()
+    ThisPC.Battery := ThisPC.GetBatteryInfo()
+    ThisPC.Uptime := ThisPC.GetUptime()
+  }
+
+  class CPUInfoClass {
+    Name := ""
+    Manufacturer := ""
+    Description := ""
+    NumberOfCores := ""
+    NumberOfLogicalProcessors := ""
+    MaxClockSpeed := ""
+    Architecture := ""
+    ProcessorId := ""
+
+    __New() {
+      for cpu in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_Processor") {
+        this.Name := cpu.Name
+        this.Manufacturer := cpu.Manufacturer
+        this.Description := cpu.Description
+        this.NumberOfCores := cpu.NumberOfCores
+        this.NumberOfLogicalProcessors := cpu.NumberOfLogicalProcessors
+        this.MaxClockSpeed := cpu.MaxClockSpeed
+        this.Architecture := cpu.Architecture
+        this.ProcessorId := cpu.ProcessorId
+        break
+      }
+    }
+  }
+
+  static GetRAMInfo() {
+    total := 0
+    for mem in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_PhysicalMemory")
+      total += mem.Capacity
+    return Round(total / (1024 ** 3), 2) ; GiB
+  }
+
+  static GetOSInfo() {
+    for os in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_OperatingSystem") {
+      ; Convert install date from WMI format
+      installDate := os.InstallDate
+      if installDate
+        installDate := SubStr(installDate, 1, 4) "-" SubStr(installDate, 5, 2) "-" SubStr(installDate, 7, 2) " " SubStr(installDate, 9, 2) ":" SubStr(installDate, 11, 2)
+      return Map(
+        "Name", os.Caption,
+        "Version", os.Version,
+        "BuildNumber", os.BuildNumber,
+        "Architecture", os.OSArchitecture,
+        "InstallDate", installDate
+      )
+    }
+    return Map()
+  }
+
+  static GetMotherboardInfo() {
+    for board in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_BaseBoard") {
+      return Map(
+        "Manufacturer", board.Manufacturer,
+        "Product", board.Product,
+        "SerialNumber", board.SerialNumber
+      )
+    }
+    return Map()
+  }
+
+  static GetNetworkInfo() {
+    info := []
+    for nic in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_NetworkAdapterConfiguration WHERE IPEnabled=TRUE") {
+      info.Push(Map(
+        "Description", nic.Description,
+        "MACAddress", nic.MACAddress,
+        "IPAddress", nic.IPAddress ? nic.IPAddress[0] : "",
+        "Gateway", nic.DefaultIPGateway ? nic.DefaultIPGateway[0] : ""
+      ))
+    }
+    return info
+  }
+
+  static GetExternalIP() {
+    try {
+      whr := ComObject("WinHttp.WinHttpRequest.5.1")
+      whr.Open("GET", "https://api.ipify.org/", true)
+      whr.Send()
+      whr.WaitForResponse()
+      return whr.ResponseText
+    } catch {
+      return "Unavailable"
+    }
+  }
+
+  static GetBatteryInfo() {
+    for bat in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_Battery") {
+      return Map(
+        "Status", bat.BatteryStatus,
+        "EstimatedChargeRemaining", bat.EstimatedChargeRemaining,
+        "EstimatedRunTime", bat.EstimatedRunTime
+      )
+    }
+    return Map()
+  }
+
+  static GetUptime() {
+    for os in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_OperatingSystem") {
+      lastBoot := os.LastBootUpTime
+      if lastBoot {
+        ; Parse WMI datetime: yyyymmddHHMMSS.xxxxxx±UUU
+        yyyy := SubStr(lastBoot, 1, 4)
+        MM := SubStr(lastBoot, 5, 2)
+        dd := SubStr(lastBoot, 7, 2)
+        hh := SubStr(lastBoot, 9, 2)
+        mi := SubStr(lastBoot, 11, 2)
+        ss := SubStr(lastBoot, 13, 2)
+        lastBootTime := yyyy . MM . dd . hh . mi . ss
+        ; Calculate seconds since last boot
+        uptimeSec := DateDiff(A_Now, lastBootTime, "Seconds")
+        days := Floor(uptimeSec / 86400)
+        hours := Floor(Mod(uptimeSec, 86400) / 3600)
+        mins := Floor(Mod(uptimeSec, 3600) / 60)
+        return days "d " hours "h " mins "m"
+      }
+    }
+    return "Unavailable"
+  }
+}
+
 ShowHelpAbout(*) {
   static aboutDlg := ""
   dlgWidth := 760
@@ -36,6 +202,8 @@ ShowHelpAbout(*) {
 }
 
 ShowAboutDialog(*) {
+  isInfoLoaded := false
+  isInfoLoaded := false
   ; Detect the active private working memory usage of this process
   pid := DllCall("GetCurrentProcessId")
   ; Open process with query info rights
@@ -70,9 +238,9 @@ ShowAboutDialog(*) {
       ;   workingSetSize := NumGet(PROCESS_MEMORY_COUNTERS, 32, "UInt64")
       ; }
       ; else {
-        workingSetSize := NumGet(PROCESS_MEMORY_COUNTERS, 32, "UInt")
+      workingSetSize := NumGet(PROCESS_MEMORY_COUNTERS, 32, "UInt")
       ; }
-      memMB := Round( workingSetSize / (1024 * 1024) , 2)
+      memMB := Round(workingSetSize / (1024 * 1024), 2)
     } else {
       memMB := "??"
     }
@@ -88,6 +256,7 @@ ShowAboutDialog(*) {
   __minutes := Floor(Mod(__Uptime, 3600000) / 60000)
   __seconds := Floor(Mod(__Uptime, 60000) / 1000)
   UptimeString := __days " Days " __hours " Hrs " __minutes " Mins " __seconds " Secs"
+
 
   ; Dialog Construction
   aboutDlg := Gui()
@@ -111,7 +280,9 @@ ShowAboutDialog(*) {
       "Window Management  ",
       "Arpeggios  ",
       "Higher F-Keys  ",
-      "Other Options"])
+      "Other Options ",
+      "Other Info"])
+  ; mainTab.OnEvent("Change",
 
   ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Tab 1 - About                                                                         │
@@ -121,38 +292,37 @@ ShowAboutDialog(*) {
   aboutDlg.Add("Picture", "x16 y74 w48 h48", A_ScriptDir "\media\icons\Mello.Ops.ico")
   ; aboutDlg.SetFont("c3e3d32", "Segoe UI")
   aboutDlg.SetFont("c039314 Bold s21", "Segoe UI")
-  aboutDlg.Add("Text", "x72 y74 w470 h50", "Mello.Ops")
-  aboutDlg.SetFont("c353881 q5 s10", "Segoe UI")
-  aboutDlg.Add("Text", "x72 y120 w300 h23", "Version: " thisapp_version)
-  aboutDlg.Add("Text", "x372 y120 w300 h23", "Private Memory Usage: " memMB " MB")
-  aboutDlg.Add("Text", "x72 y140 w600 h23", "Licensed under the MIT License")
-  aboutDlg.Add("Text", "x372 y140 w600 h23", "Uptime: " UptimeString)
+  aboutDlg.Add("Text", "x72 y74 w470", "Mello.Ops")
 
   ; Tagline
-  aboutDlg.Add("GroupBox", "x72 y232 w500 h56", "")
   aboutDlg.SetFont("Bold Italic s14", "Segoe UI")
-  aboutDlg.Add("Text", "x80 y250 w400 h23 ", "Chill. Flow. Repeat.")
+  aboutDlg.Add("Text", "yp+38 w400 h23 ", "Chill. Flow. Repeat.")
 
-  ; Horizontal Line
-  ; aboutDlg.Add("menu", "x16 y200 w732 h1 c353881")
+  ; Version and License
+  ; aboutDlg.Add("Text", "xp-30 yp+20 w600 h23", "Margin: " aboutDlg.MarginX " px, " aboutDlg.MarginY " px")
+  aboutDlg.SetFont("c353881 q5 s10", "Segoe UI")
+  aboutDlg.Add("Text", "xp yp+25 w300", "Version: " thisapp_version)
+  aboutDlg.Add("Text", "yp w300", "Private Memory Usage: " memMB " MB")
+  aboutDlg.Add("Text", "xp-308 yp+20 w300", "Licensed under the MIT License")
+  aboutDlg.Add("Text", "yp w300", "Uptime: " UptimeString)
 
   ; Credit Section and Links to other resources
   aboutDlg.SetFont("c039314 Bold q5 s11", "Segoe UI")
-  aboutDlg.Add("Text", "x72 y405 w600 h23", "Credits and Resources")
+  aboutDlg.Add("Text", "x72 y400 w600 h23", "Credits and Resources")  ; Fixed location
   aboutDlg.SetFont("c000000 Norm q5 s10", "Segoe UI")
-  aboutDlg.Add("Picture", "x72 y430 w16 h16", A_ScriptDir "\media\icons\autohotkey.ico")
-  aboutDlg.Add("Link", "x96 y428 w400 h23",
+  aboutDlg.Add("Picture", "x72 y+0 w16 h16", A_ScriptDir "\media\icons\autohotkey.ico")
+  aboutDlg.Add("Link", "yp w400 h23",
     "AutoHotkey (version " A_AhkVersion ") is available at <a href=`"https://www.autohotkey.com`">autohotkey.com</a>")
 
-  aboutDlg.Add("Picture", "x70 y450 w20 h20", A_ScriptDir "\media\icons\icons8.ico")
-  aboutDlg.Add("Link", "x96 y450 w600 h23", "Icons by <a href=`"https://icons8.com`">icons8.com</a>")
+  aboutDlg.Add("Picture", "x70 yp+20 w20 h20", A_ScriptDir "\media\icons\icons8.ico")
+  aboutDlg.Add("Link", "yp w600 h23", "Icons by <a href=`"https://icons8.com`">icons8.com</a>")
 
-  aboutDlg.Add("Picture", "x70 y472 w20 h20", A_ScriptDir "\media\icons\icons8-github-windows-10-16.png")
-  aboutDlg.Add("Link", "x96 y472 w600 h23",
+  aboutDlg.Add("Picture", "x70 yp+20 w20 h20", A_ScriptDir "\media\icons\icons8-github-windows-10-16.png")
+  aboutDlg.Add("Link", "yp w600 h23",
     "<a href=`"https://www.autohotkey.com/boards/viewtopic.php?f=83&t=94044`">WiseGUI.ahk library</a> by <a href=`"https://www.autohotkey.com/boards/memberlist.php?mode=viewprofile&u=54&sid=f3bac845536fc1eace03994a9e73273e`">SKAN</a>")
 
-  aboutDlg.Add("Picture", "x70 y492 w20 h20", A_ScriptDir "\media\icons\icons8-github-windows-10-16.png")
-  aboutDlg.Add("Link", "x96 y492 w300 h23",
+  aboutDlg.Add("Picture", "x70 yp+20 w20 h20", A_ScriptDir "\media\icons\icons8-github-windows-10-16.png")
+  aboutDlg.Add("Link", "yp w300 h23",
     "<a href=`"https://github.com/FuPeiJiang/VD.ahk/tree/v2_port`">VD.ahk library</a> by <a href=`"https://github.com/FuPeiJiang`">FuPeiJiang</a>")
   ; aboutDlg.Add("Link", "x72 y270 w300 h23",
   ; "<a href=`"https://github.com/Ciantic/VirtualDesktopAccessor`">VirtualDesktopAccessor</a> by <a href=`"https://github.com/Ciantic`">Ciantic</a>")
@@ -166,28 +336,66 @@ ShowAboutDialog(*) {
   aboutDlg.SetFont("Bold s11", "Segoe UI")
   aboutDlg.Add("Text", "x16 y74 w705 h23", "Hotkeys = keyboard shortcuts. Go ahead and try them out!")
 
+  ; --- Radio Buttons and Dynamic ListViews ---
+  ; GroupBox for visual clarity (optional)
+  aboutDlg.SetFont("Bold s10", "Segoe UI")
+  aboutDlg.Add("GroupBox", "x16 y100 w732 h50", "Hotkey Groups")
+
+  ; Radio Buttons (horizontal)
+  aboutDlg.SetFont("Norm s10", "Segoe UI")
+  hk_rb_core := aboutDlg.Add("Radio", "x32 y118 h23 vhk_rb_core", "Core Hotkeys")
+  hk_rb_aux := aboutDlg.Add("Radio", "xp+200 h23 vhk_rb_aux", "Aux Hotkeys")
+
+  hk_rb_core.Value := true ; Default selection
+  aboutDlg.SetFont("c000000 Norm q5 s11", "Segoe UI")
+  aboutDlg.Add("Text", "x16 y155 w732 h54 vhk_rb_text", "Hotkeys - Keyboard Shortcuts")
+
   ; Add ListView for Hotkeys
-  aboutDlg.SetFont("c353881 Norm q5 s11", "Segoe UI")
-  lv_corehkeys := aboutDlg.Add("ListView", "r16 w732 -LV0x10 -Multi NoSort c353881", ["Action", "Hotkey", "Description"])
+  aboutDlg.SetFont("c353881 Norm q5 s10", "Segoe UI")
+  lv_corehkeys := aboutDlg.Add("ListView", "x16 y185 w732 r15 c353881", ["Action", "Hotkey", "Description"])
   lv_corehkeys.Opt("+Report") ; +Sort")
 
   ; Example hotkeys - replace/add as needed for your project
+  lv_corehkeys.Opt("+Report") ; +Sort")
   lv_corehkeys.Opt("-Redraw")
   lv_corehkeys.Add(, "Reload and Restart " thisapp_name, "[Ctrl] + [⊞] + [Alt] + [R] ", "Reload and restart " thisapp_name)
   lv_corehkeys.Add(, "AutoHotkey Help", "[Ctrl] + [⊞] + [Alt] + [F2]`t", "Open the AutoHotkey help docs")
   lv_corehkeys.Add(, "Sleep", "[Ctrl] + [⊞] + [Alt] + [F12]`t", "Put this system to sleep")
   lv_corehkeys.Add(, thisapp_name " Help", "[Ctrl] + [⊞] + [Alt] + [F1]`t", "Display this dialog")
-  lv_corehkeys.Add(, "Open the user's folder", "[⊞] + [F]`t", "Open the user's directory in File Explorer")
+  lv_corehkeys.Add(, "Open the user's folder", "[⊞] + [F]`t", "Open the user's Documents folder in File Explorer")
   lv_corehkeys.Add(, "Edit this script", "[Ctrl] + [⊞] + [Alt] + [E]`t", "Open the main " thisapp_name " script (default editor)")
   lv_corehkeys.Add(, "Open the " thisapp_name " folder", "[Ctrl] + [⊞] + [Alt] + [F]`t", "Open the " thisapp_name " folder in File Explorer")
   lv_corehkeys.Add(, "Windows Terminal", "[Ctrl] + [Alt] + [T]`t", "Open or focus the Windows Terminal window")
   lv_corehkeys.Add(, "Windows Terminal (Elevated)", "[Ctrl] + [Shift] + [Alt] + [T]`t", "Open an elevated Windows Terminal instance")
   lv_corehkeys.Add(, "Open Calculator", "2 × [Right_Ctrl]`t", "Open or focus the Calculator app")
-
   lv_corehkeys.ModifyCol() ; Auto-size the first column
   lv_corehkeys.ModifyCol(2) ; Auto-size the second column
   lv_corehkeys.ModifyCol(3)
   lv_corehkeys.Opt("+Redraw")
+
+  ; Example hotkeys - replace/add as needed for your project
+  lv_auxhkeys := aboutDlg.Add("ListView", "x16 y185 w732 r12 vhk_lv_aux", ["Action", "Hotkey", "Description"])
+  lv_auxhkeys.Opt("+Report")
+  lv_auxhkeys.Opt("-Redraw")
+  lv_auxhkeys.Add(, "Yayaya " thisapp_name, "[Ctrl] + [⊞] + [Alt] + [R] ", "Reload and restart " thisapp_name)
+  lv_auxhkeys.Add(, "Yayay Help", "[Ctrl] + [⊞] + [Alt] + [F2]`t", "Open the AutoHotkey help docs")
+  lv_auxhkeys.ModifyCol() ; Auto-size the first column
+  lv_auxhkeys.ModifyCol(2) ; Auto-size the second column
+  lv_auxhkeys.ModifyCol(3)
+  lv_auxhkeys.Opt("+Redraw")
+  lv_auxhkeys.Visible := false
+
+  ; Handler to switch ListViews
+  hk_switchListView(*) {
+    lv_corehkeys.Visible := hk_rb_core.Value
+    lv_auxhkeys.Visible := hk_rb_aux.Value
+    if (hk_rb_core.Value)
+      aboutDlg["hk_rb_text"].Value := "Core Hotkeys are required to manage this utiliy, or use alternative modifiers, double-press, etc."
+    else if (hk_rb_aux.Value)
+      aboutDlg["hs_rb_text"].Value := "Aux Hotkeys can be redefined or use traditional modifier keys."
+  }
+  hk_rb_core.OnEvent("Click", hk_switchListView)
+  hk_rb_aux.OnEvent("Click", hk_switchListView)
 
   ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Tab 3 - Hotstrings                                                                    │
@@ -215,8 +423,6 @@ ShowAboutDialog(*) {
   hs_rb_ansi.Value := true ; Default selection
   aboutDlg.SetFont("c000000 Norm q5 s11", "Segoe UI")
   aboutDlg.Add("Text", "x16 y155 w732 h54 vhs_rb_text", "Aux Hotstrings include optional expansions and modifiers for advanced use.")
-
-  ; ListViews for each category (stacked, only one visible at a time)
 
   ; ANSI/ASCII Alt Codes
   aboutDlg.SetFont("c353881 Norm q5 s10", "Segoe UI")
@@ -424,6 +630,7 @@ ShowAboutDialog(*) {
   wm_lv_keeb.ModifyCol(2) ; Auto-size the second column
   wm_lv_keeb.ModifyCol(3)
   wm_lv_keeb.Opt("+Redraw")
+
   ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Tab 5 - Arpeggios                                                                     │
   ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
@@ -475,6 +682,104 @@ ShowAboutDialog(*) {
   a_rb_nav.OnEvent("Click", a_switchListView)
 
 
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 6 - Higher F-Keys                                                                 │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
+
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 7 - Other Options                                                                 │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
+
+  ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+  ; │ Tab 8 - This.Info                                                                     │
+  ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
+  mainTab.UseTab(8)
+  aboutDlg.SetFont("Bold s11", "Segoe UI")
+  aboutDlg.Add("Text", "x16 y74 w705 h23", "This.Info")
+
+  ; Host information container
+  aboutDlg.SetFont("c353881 Norm q5 s10", "Segoe UI")
+
+  ; Function to copy text to clipboard
+  CopyToClipboard(text, *) {
+    A_Clipboard := text
+    ToolTip("Copied to clipboard!", , , 1)
+    SetTimer () => ToolTip(, , , 1), -1000
+  }
+
+  ; Create text controls with copy buttons
+  yPos := 100
+  spacing := 24
+
+  ; Host Name
+  aboutDlg.Add("Text", "x20 y" yPos " w120", "Host Name:")
+  hostText := aboutDlg.Add("Text", "yp", A_ComputerName)
+  copyBtn1 := aboutDlg.Add("Picture", "yp+0 w14 h14", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  copyBtn1.OnEvent("Click", (*) => CopyToClipboard(A_ComputerName))
+
+  ; Current User
+  yPos += spacing
+  aboutDlg.Add("Text", "x20 y" yPos " w120", "Current User:")
+  userText := aboutDlg.Add("Text", "yp", A_UserName . (A_IsAdmin ? " (Admin)" : ""))
+  copyBtn2 := aboutDlg.Add("Picture", "yp+0 w14 h14", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  copyBtn2.OnEvent("Click", (*) => CopyToClipboard(A_UserName . (A_IsAdmin ? " (Admin)" : "")))
+
+  ; OS Version
+  yPos += spacing
+  aboutDlg.Add("Text", "x20 y" yPos " w120", "OS Version:")
+  osText := aboutDlg.Add("Text", "yp", A_OSVersion)
+  copyBtn3 := aboutDlg.Add("Picture", "yp+0 w14 h14", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  copyBtn3.OnEvent("Click", (*) => CopyToClipboard(A_OSVersion))
+
+  ; Word Size
+  yPos += spacing
+  aboutDlg.Add("Text", "x20 y" yPos " w120", "Word Size:")
+  wordText := aboutDlg.Add("Text", "yp", A_Is64bitOS ? "64-bit" : "32-bit")
+  copyBtn4 := aboutDlg.Add("Picture", "yp+0 w14 h14", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  copyBtn4.OnEvent("Click", (*) => CopyToClipboard(A_Is64bitOS ? "64-bit" : "32-bit"))
+
+  ; CPU Info
+  yPos += spacing
+  aboutDlg.Add("Text", "x20 y" yPos " w120", "CPU:")
+  cpuProperty := "Click here to display CPU info" ; . ThisPC.CPUInfo.Name
+  cpuText := aboutDlg.Add("Text", "yp", cpuProperty)
+  cpuText.OnEvent("Click", (*) => GetPCInfo())
+  copyBtn5 := aboutDlg.Add("Picture", "xm yp+0 w14 h14 Hidden", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  copyBtn5.OnEvent("Click", (*) => CopyToClipboard(cpuProperty))
+
+  ; ; Memory
+  ; yPos += spacing
+  ; aboutDlg.Add("Text", "x20 y" yPos " w120", "Memory:")
+  ; memText := aboutDlg.Add("Text", "yp", "xx GiB/ 127.78 GiB")
+  ; copyBtn6 := aboutDlg.Add("Picture", "yp+0 w14 h14", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  ; copyBtn6.OnEvent("Click", (*) => CopyToClipboard(memText.Text))
+
+  ; ; Local IP
+  ; yPos += spacing
+  ; aboutDlg.Add("Text", "x20 y" yPos " w120", "Local IP:")
+  ; ipText := aboutDlg.Add("Text", "yp", "192.168.1.1")
+  ; copyBtn7 := aboutDlg.Add("Picture", "yp+0 w14 h14", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  ; copyBtn7.OnEvent("Click", (*) => CopyToClipboard(ipText.Text))
+
+  ; ; External IP
+  ; yPos += spacing
+  ; aboutDlg.Add("Text", "x20 y" yPos " w120", "External IP:")
+  ; extIpText := aboutDlg.Add("Text", "yp", "xxx.xxx.xxx.xxx")
+  ; copyBtn8 := aboutDlg.Add("Picture", "yp+0 w14 h14", A_ScriptDir "\media\icons\icons8-copy-16.png")
+  ; copyBtn8.OnEvent("Click", (*) => CopyToClipboard(extIpText.Text))
+
   aboutDlg.Title := "Mello.Ops - About"
   return aboutDlg
+
+  ; ╭──╮
+  ; │ Helper function: GetPCInfo()  │
+  ; ╰──╯
+  GetPCInfo(*) {
+    cpuText.Text := "Please wait..."
+    ThisPC.CollectInfo()
+    cpuProperty := ThisPC.CPUInfo.Name ; . " (" . ThisPC.CPUInfo.NumberOfCores . "/" . ThisPC.CPUInfo.NumberOfLogicalProcessors . ") @ " . Round(ThisPC.CPUInfo.MaxClockSpeed / 1000, 1) . "GHz"
+    copyBtn5.Visible := true
+    cpuText.Text := cpuProperty
+
+  }
 }

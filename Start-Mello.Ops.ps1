@@ -43,7 +43,7 @@ function New-Directory {
   if (!(Test-Path -Path $Path -PathType Container)) {
     try {
       New-Item -ItemType Directory -Path $Path -Force | Out-Null
-      Write-Output "Created directory: $Path"
+      Write-Host "Created directory: $Path"
     }
     catch {
       Write-Error "Failed to create directory ${Path}:  $($_.Exception.Message)"
@@ -61,7 +61,7 @@ function Get-AutoHotkey {
   if (!(New-Directory -Path $AHKBinPath)) {
     return $false
   }
-  Write-Output "Downloading AutoHotkey..."
+  Write-Host "Downloading AutoHotkey..."
   try {
     # Force strong TLS
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -77,7 +77,7 @@ function Get-AutoHotkey {
     Invoke-WebRequest -Uri $AHKZipUrl -Headers $headers -OutFile $AHKZipPath -ErrorAction Stop
     Expand-Archive -Path $AHKZipPath -DestinationPath $AHKBinPath -Force
     Remove-Item -Path $AHKZipPath -Force
-    Write-Output "AutoHotkey downloaded and extracted to '$AHKBinPath'."
+    Write-Host "AutoHotkey downloaded and extracted to '$AHKBinPath'."
     return $true
   }
   catch {
@@ -101,9 +101,6 @@ function New-Shortcut {
     [string] $ShortcutDisplayName
   )
   try {
-    if (Test-Path $ShortcutPath) {
-      Write-Warning "Shortcut '$ShortcutDisplayName' already exists at '$ShortcutPath'. Overwriting."
-    }
     $Shell = New-Object -ComObject WScript.Shell
     $Shortcut = $Shell.CreateShortcut($ShortcutPath)
     $Shortcut.TargetPath = $TargetPath
@@ -112,22 +109,14 @@ function New-Shortcut {
     $Shortcut.WorkingDirectory = $WorkingDirectory
     $Shortcut.IconLocation = $IconPath
     $Shortcut.Save()
-
-    # Rename the shortcut display name
-    $objShell = New-Object -ComObject Shell.Application
-    $objFolder = $objShell.Namespace((Split-Path -Path $ShortcutPath -Parent))
-    $objItem = $objFolder.ParseName((Split-Path -Path $ShortcutPath -Leaf))
-    $objItem.Name = $ShortcutDisplayName
-
     [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Shell)
-    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($objShell)
-    Remove-Variable -Name Shell, objShell
+    if (Get-Variable Shell -ErrorAction SilentlyContinue) { Remove-Variable Shell }
   }
   catch {
     Write-Error "Failed to create shortcut: $($_.Exception.Message)"
     return $false
   }
-  Write-Output "Shortcut created at '$ShortcutPath'."
+  Write-Host "Shortcut created at '$ShortcutPath'."
   return $true
 }
 #endregion
@@ -145,23 +134,16 @@ function Install-FromUrl {
       Write-Error "Failed to create install directory. Exiting script."
       exit 1
     }
-    Write-Output "Copying files to $InstallDir..."
+    Write-Host "Copying files to $InstallDir..."
     try {
-      try {
-        Invoke-WebRequest -Uri $RepoZipUrl -OutFile $RepoZipPath -ErrorAction Stop
-        if (Test-Path $TempExtractPath) { Remove-Item $TempExtractPath -Recurse -Force }
-        Expand-Archive -Path $RepoZipPath -DestinationPath $TempExtractPath -Force
-        $SourceFolder = Join-Path $TempExtractPath "Mello.Ops-main"
-        Copy-Item -Path (Join-Path $SourceFolder '*') -Destination $InstallDir -Recurse -Force
-        Remove-Item $RepoZipPath -Force
-        Remove-Item $TempExtractPath -Recurse -Force
-      }
-      catch {
-        Write-Error "Failed to download or extract Mello.Ops files: $($_.Exception.Message)"
-        exit 1
-      }
-      Copy-Item -Path (Join-Path $PSScriptRoot '*') -Destination $InstallDir -Recurse -Force
-      Write-Output "Files copied to $InstallDir."
+      Invoke-WebRequest -Uri $RepoZipUrl -OutFile $RepoZipPath -ErrorAction Stop
+      if (Test-Path $TempExtractPath) { Remove-Item $TempExtractPath -Recurse -Force }
+      Expand-Archive -Path $RepoZipPath -DestinationPath $TempExtractPath -Force
+      $SourceFolder = Join-Path $TempExtractPath "Mello.Ops-main"
+      Copy-Item -Path (Join-Path $SourceFolder '*') -Destination $InstallDir -Recurse -Force
+      Remove-Item $RepoZipPath -Force
+      Remove-Item $TempExtractPath -Recurse -Force
+      Write-Host "Files copied to $InstallDir."
     }
     catch {
       Write-Error "Failed to copy files: $($_.Exception.Message)"
@@ -192,7 +174,7 @@ function Install-FromUrl {
 }
 
 function Run-FromLocal {
-  Write-Output "Running from local copy. Using current directory as install directory."
+  Write-Host "Running from local copy. Using current directory as install directory."
 
   # Set InstallDir to the script's current directory for local execution
   $InstallDir = $PSScriptRoot
@@ -216,12 +198,14 @@ function Run-FromLocal {
   }
 
   # Create the shortcut if it doesn't exist.
-  New-Shortcut -ShortcutPath $ShortcutPath -TargetPath $TargetPath -Arguments $Arguments -Description $Description -WorkingDirectory $InstallDir -IconPath $IconPath -ShortcutDisplayName $ShortcutDisplayName -SilentlyContinue
+  if (!(Test-Path $ShortcutPath)) {
+    New-Shortcut -ShortcutPath $ShortcutPath -TargetPath $TargetPath -Arguments $Arguments -Description $Description -WorkingDirectory $InstallDir -IconPath $IconPath -ShortcutDisplayName $ShortcutDisplayName
+  }
 
   try {
     Start-Process -FilePath $ShortcutPath
-    Write-Output "Shortcut '$ShortcutDisplayName' started."
-    Write-Information -MessageData "If the script does not launch, you may need to unblock the $($TargetPath) file" InformationAction Continue
+    Write-Host "Shortcut '$ShortcutDisplayName' started."
+    Write-Host "If the script does not launch, you may need to unblock the $($TargetPath) file"
   }
   catch {
     Write-Error "Failed to start the shortcut: $($_.Exception.Message)"
@@ -232,15 +216,11 @@ function Run-FromLocal {
 
 #region Main()
 # Determine if the script was invoked from a URL or from a file.
-if ($null -eq $MyInvocation.MyCommand.Path -or $MyInvocation.MyCommand.Path -eq '-') {
-  write-host "$MyInvocation.MyCommand.Path is null or empty. Assuming script is run from URL."
-  $isRunFromUrl = $true
-}
-
-if ($isRunFromUrl) {
-  Install-FromUrl
-}
-else {
-  Run-FromLocal
-}
+ $isRunFromUrl = ($null -eq $MyInvocation.MyCommand.Path -or $MyInvocation.MyCommand.Path -eq '-')
+ if ($isRunFromUrl) {
+   Write-Host "$MyInvocation.MyCommand.Path is null or empty. Assuming script is run from URL."
+   Install-FromUrl
+ } else {
+   Run-FromLocal
+ }
 #endregion
