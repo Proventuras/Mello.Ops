@@ -30,7 +30,6 @@ global toggle_sound_file_disabled := ".\media\sounds\01_disable.wav"
 global sound_file_start := ".\media\sounds\start-13691.wav"
 global sound_file_stop := ".\media\sounds\stop-13692.wav"
 global regkey_sticky_keys := "HKEY_CURRENT_USER\Control Panel\Accessibility\StickyKeys"
-global Aux_HotKeySupport := true
 global Aux_HotStringSupport := true
 
 ; --- Splash Screen Modal ---
@@ -55,7 +54,7 @@ if !FileExist(".\custom\_custom_functions.ahk") {
   FileAppend "
   (
   ; ╭─────────────────────────────────────────────╮
-  ; │ Custom Functions for Mello.Ops             │
+  ; │ Custom Functions for Mello.Ops              │
   ; │ Add your personal functions and hotkeys here│
   ; ╰─────────────────────────────────────────────╯
 
@@ -122,7 +121,6 @@ EndScript(*)
 ; │       KEY HOTKEY DEFINITIONS: CORE FUNCTIONALITY            │
 ; │   Not affected by ToggleAuxHotkeys and ToggleAuxHotstrings  │
 ; ├─────────────────────────────────────────────────────────────┤
-; │  [Ctrl]+[Win]+[Alt]+[K]    Toggle Aux Hotkeys (DISABLED)    │
 ; │  [Ctrl]+[Win]+[Alt]+[S]    Toggle Aux Hotstrings (DISABLED) │
 ; │  [Ctrl]+[Win]+[Alt]+[R]    Reload this app                  │
 ; │  [Ctrl]+[Win]+[Alt]+[E]    Edit this AHK (default editor)   │

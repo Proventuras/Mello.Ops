@@ -1,17 +1,4 @@
 #Requires AutoHotkey v2.0
-; ╭══════════════════════╮
-; │ Higher Function Keys │
-; ╰══════════════════════╯
-CapsLock & F3::F23
-CapsLock & F4::F24
-CapsLock & F5::F15
-CapsLock & F6::F16
-CapsLock & F7::F17
-CapsLock & F8::F18
-CapsLock & F9::F19
-CapsLock & F10::F20
-CapsLock & F11::F21
-CapsLock & F12::F22
 
 ; ╭─────────────────────────────────────────────────────────────╮
 ; │  Helper Function: Wrapper for MsgBox for undefined HotClix  │
@@ -58,8 +45,8 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   guiMsg.Add("Text", "Center xm y+10 h30", app_in_use)
 
   ; Main message
-  guiMsg.Add("Text", "Center xm y+10", trigger_key)
-  guiMsg.Add("Text", "Center xm y+10", message_string)
+  guiMsg.Add("Text", "xm y+10", trigger_key)
+  guiMsg.Add("Text", "xm y+10", message_string)
 
   ; Center on screen
   guiMsg.Show("AutoSize Center")
@@ -71,8 +58,21 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   SetTimer () => guiMsg.Destroy(), -timeout_in_seconds * 1000
 }
 
-#HotIf (Aux_HotKeySupport = true)
-{
+; #HotIf (Aux_HotKeySupport = true)
+; {
+  ; ╭══════════════════════╮
+  ; │ Higher Function Keys │
+  ; ╰══════════════════════╯
+  CapsLock & F3::F23
+  CapsLock & F4::F24
+  CapsLock & F5::F15
+  CapsLock & F6::F16
+  CapsLock & F7::F17
+  CapsLock & F8::F18
+  CapsLock & F9::F19
+  CapsLock & F10::F20
+  CapsLock & F11::F21
+  CapsLock & F12::F22
 
   ; Notion-specific hotkeys
   #HotIf WinActive("ahk_exe Notion.exe")
@@ -322,5 +322,3 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   F24:: ModalMsg "", ""
 
   +F19:: ModalMsg "No Definition Assigned", "Default"
-}
-#HotIf

@@ -265,7 +265,7 @@ ShowAboutDialog(*) {
 
   ; First Line with link to docs
   aboutDlg.Add("Link", "x9 y12 h23",
-    "All items below are frequently used features. Visit the <a href=`"https://github.com/Proventuras/Mello.Ops/tree/main/docs`">Official Documentation</a> for a more comprehensive list."
+    "All items below are frequently used features. Visit the <a href=`"https://github.com/voltaire-toledo/Mello.Ops/tree/main/docs`">Official Documentation</a> for a more comprehensive list."
   )
 
   ; Status Bar
@@ -310,11 +310,11 @@ ShowAboutDialog(*) {
   aboutDlg.SetFont("c039314 Bold q5 s11", "Segoe UI")
   aboutDlg.Add("Text", "x72 y400 w600 h23", "Credits and Resources")  ; Fixed location
   aboutDlg.SetFont("c000000 Norm q5 s10", "Segoe UI")
-  aboutDlg.Add("Picture", "x72 y+0 w16 h16", A_ScriptDir "\media\icons\autohotkey.ico")
+  aboutDlg.Add("Picture", "x72 y+0 w16 h16", A_ScriptDir "\media\icons\apps\autohotkey.ico")
   aboutDlg.Add("Link", "yp w400 h23",
     "AutoHotkey (version " A_AhkVersion ") is available at <a href=`"https://www.autohotkey.com`">autohotkey.com</a>")
 
-  aboutDlg.Add("Picture", "x70 yp+20 w20 h20", A_ScriptDir "\media\icons\icons8.ico")
+  aboutDlg.Add("Picture", "x70 yp+20 w20 h20", A_ScriptDir "\media\icons\apps\icons8.ico")
   aboutDlg.Add("Link", "yp w600 h23", "Icons by <a href=`"https://icons8.com`">icons8.com</a>")
 
   aboutDlg.Add("Picture", "x70 yp+20 w20 h20", A_ScriptDir "\media\icons\icons8-github-windows-10-16.png")
@@ -331,28 +331,12 @@ ShowAboutDialog(*) {
   ; │ Tab 2 - Hotkeys                                                                       │
   ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
   mainTab.UseTab(2)
-  ; aboutDlg.SetFont("norm s11", "Segoe UI")
-  ; aboutDlg.Add("Text", "x16 y78 w690 h26", "Hotkeys")
   aboutDlg.SetFont("Bold s11", "Segoe UI")
   aboutDlg.Add("Text", "x16 y74 w705 h23", "Hotkeys = keyboard shortcuts. Go ahead and try them out!")
 
-  ; --- Radio Buttons and Dynamic ListViews ---
-  ; GroupBox for visual clarity (optional)
-  aboutDlg.SetFont("Bold s10", "Segoe UI")
-  aboutDlg.Add("GroupBox", "x16 y100 w732 h50", "Hotkey Groups")
-
-  ; Radio Buttons (horizontal)
-  aboutDlg.SetFont("Norm s10", "Segoe UI")
-  hk_rb_core := aboutDlg.Add("Radio", "x32 y118 h23 vhk_rb_core", "Core Hotkeys")
-  hk_rb_aux := aboutDlg.Add("Radio", "xp+200 h23 vhk_rb_aux", "Aux Hotkeys")
-
-  hk_rb_core.Value := true ; Default selection
-  aboutDlg.SetFont("c000000 Norm q5 s11", "Segoe UI")
-  aboutDlg.Add("Text", "x16 y155 w732 h54 vhk_rb_text", "Hotkeys - Keyboard Shortcuts")
-
   ; Add ListView for Hotkeys
   aboutDlg.SetFont("c353881 Norm q5 s10", "Segoe UI")
-  lv_corehkeys := aboutDlg.Add("ListView", "x16 y185 w732 r15 c353881", ["Action", "Hotkey", "Description"])
+  lv_corehkeys := aboutDlg.Add("ListView", "x16 y100 w732 r19 c353881", ["Action", "Hotkey", "Description"])
   lv_corehkeys.Opt("+Report") ; +Sort")
 
   ; Example hotkeys - replace/add as needed for your project
@@ -372,30 +356,7 @@ ShowAboutDialog(*) {
   lv_corehkeys.ModifyCol(2) ; Auto-size the second column
   lv_corehkeys.ModifyCol(3)
   lv_corehkeys.Opt("+Redraw")
-
-  ; Example hotkeys - replace/add as needed for your project
-  lv_auxhkeys := aboutDlg.Add("ListView", "x16 y185 w732 r12 vhk_lv_aux", ["Action", "Hotkey", "Description"])
-  lv_auxhkeys.Opt("+Report")
-  lv_auxhkeys.Opt("-Redraw")
-  lv_auxhkeys.Add(, "Yayaya " thisapp_name, "[Ctrl] + [⊞] + [Alt] + [R] ", "Reload and restart " thisapp_name)
-  lv_auxhkeys.Add(, "Yayay Help", "[Ctrl] + [⊞] + [Alt] + [F2]`t", "Open the AutoHotkey help docs")
-  lv_auxhkeys.ModifyCol() ; Auto-size the first column
-  lv_auxhkeys.ModifyCol(2) ; Auto-size the second column
-  lv_auxhkeys.ModifyCol(3)
-  lv_auxhkeys.Opt("+Redraw")
-  lv_auxhkeys.Visible := false
-
-  ; Handler to switch ListViews
-  hk_switchListView(*) {
-    lv_corehkeys.Visible := hk_rb_core.Value
-    lv_auxhkeys.Visible := hk_rb_aux.Value
-    if (hk_rb_core.Value)
-      aboutDlg["hk_rb_text"].Value := "Core Hotkeys are required to manage this utiliy, or use alternative modifiers, double-press, etc."
-    else if (hk_rb_aux.Value)
-      aboutDlg["hs_rb_text"].Value := "Aux Hotkeys can be redefined or use traditional modifier keys."
-  }
-  hk_rb_core.OnEvent("Click", hk_switchListView)
-  hk_rb_aux.OnEvent("Click", hk_switchListView)
+  lv_corehkeys.Visible := True
 
   ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
   ; │ Tab 3 - Hotstrings                                                                    │
@@ -771,15 +732,14 @@ ShowAboutDialog(*) {
   aboutDlg.Title := "Mello.Ops - About"
   return aboutDlg
 
-  ; ╭──╮
-  ; │ Helper function: GetPCInfo()  │
-  ; ╰──╯
   GetPCInfo(*) {
+    ; ╭───────────────────────────────────────────────────────────────────────────────────────╮
+    ; │ Helper function: GetPCInfo()                                                          │
+    ; ╰───────────────────────────────────────────────────────────────────────────────────────╯
     cpuText.Text := "Please wait..."
     ThisPC.CollectInfo()
     cpuProperty := ThisPC.CPUInfo.Name ; . " (" . ThisPC.CPUInfo.NumberOfCores . "/" . ThisPC.CPUInfo.NumberOfLogicalProcessors . ") @ " . Round(ThisPC.CPUInfo.MaxClockSpeed / 1000, 1) . "GHz"
     copyBtn5.Visible := true
     cpuText.Text := cpuProperty
-
   }
 }

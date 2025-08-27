@@ -42,26 +42,7 @@ KeyWaitAny(*)
   return ih.Input  ; Return the input string
 }
 
-; ╭────────────────────────────────────────────────╮
-; │  Helper Function: SplashGUI(Message, TimeOut)  │
-; ╰────────────────────────────────────────────────╯
-SplashGUI(message, timeout) {
-  WiseGui("MelloAppSplash"
-    , "Margins:       3,3,0,4"
-    ; , "Theme:,,," . LoadPicture(A_AhkPath, "Icon1", &ImageType)
-    , "Theme:,,," LoadPicture(app_ico, "Icon1", &ImageType)
-    , "FontMain:     S14, Arial"
-    , "MainText:     " message
-    ; , "FontSub:      S14, Consolas"
-    ; , "SubText:" . A_AhkVersion
-    , "SubAlign:     +1"
-    ; , "Show:         Fade@400ms"
-    , "Hide:         Fade@1000ms"
-    , "Timer:        2000"
-  )
-}
-
-ShowArpeggioSplash(message) {
+ShowArpeggioSplash(message, icon := "none") {
   ; This function displays a splash screen with a message in the bottom right corner.
   ; It uses a GUI to show the message and positions it at the bottom right of the active monitor.
   ; The GUI will fade in and out, and it will not activate the window.
@@ -96,10 +77,10 @@ ShowArpeggioSplash(message) {
 ; |  [O] ✓ Outlook                           │
 ; |  [T] ✓ Windows Terminal                  │
 ; |  [!] ✓ Windows Terminal (ADMIN)          │
+; │  [w] ✓ Warp Terminal                     │
 ; ├──────────────────────────────────────────┤
 ; │  TODO: Possible Candidates               │
 ; │  [w] Terminal (WSL)                      │
-; │  [w] Warp Terminal                       │
 ; ╰──────────────────────────────────────────╯
 CapsLock & o::
 {
@@ -115,21 +96,8 @@ CapsLock & o::
     "`nT`t Windows Terminal"
     "`nW`t Warp Terminal"
   )
+
   ShowArpeggioSplash(AppModeOptionsString)
-
-  ; Display the options for the user
-  ; WiseGui(OptionWindow
-  ;   , "Margins:       3,3,0,4"
-  ;   , "Theme:,,," LoadPicture(app_ico, "Icon1", &ImageType)
-  ;   , "FontMain:     S12 Bold, Arial"
-  ;   , "MainText:     Press a key to start an app:"
-  ;   , "MainAlign:    0"
-  ;   , "FontSub:      S11 Norm, Segoe UI"
-  ;   , "SubText:    " AppModeOptionsString
-  ;   , "SubAlign:     -1"
-  ;   , "Timer:        3500"
-  ; )
-
   ; Begin the 4 second wait before fading out the GUI
   retKeyHook := KeyWaitAny()
 

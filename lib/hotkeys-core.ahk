@@ -5,7 +5,8 @@
 ; ║  Core, mandatory hotkeys                                                                                        ║
 ; ╰═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╯
 
-#HotIf (Aux_HotKeySupport = true) && !(WinActive("ahk_class TscShellContainerClass"))
+; #HotIf (Aux_HotKeySupport = true) && !(WinActive("ahk_class TscShellContainerClass"))
+#HotIf !(WinActive("ahk_class TscShellContainerClass"))
 {
   /*╭────────────────────────────────────────────────────────────────────────────────────────────╮
     │ NOTE: The #HotIf Condition is designed to prevent layers of keyboard shortcuts in virtual  |

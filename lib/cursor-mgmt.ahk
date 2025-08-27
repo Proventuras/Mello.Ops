@@ -20,11 +20,16 @@ global origCursorSize := RegRead(sizeKey, valueName, 32)
 
 ; ╭────────────────────────────────────────────────────────────────────────────────────────────╮
 ; │ SetCursorSize(newSize)                                                                     │
-; │   newSize: Integer. Value of 32 for Size0 and each size +_ 16 px until it reachess 255 px. │
+; │   newSize: Integer. Value of 1 for 16 px until it reachess 255 px.                         │
 ; ╰────────────────────────────────────────────────────────────────────────────────────────────╯
 SetCursorSize(newSize) {
+  ; Get Current cursor size
+  currSize := RegRead(sizeKey, valueName, CURSOR_MIN)
+  newSize := currSize + (newSize * CURSOR_STEP)
+
   ; Clamp value between CURSOR_MIN and CURSOR_MAX
   newSize := Max(CURSOR_MIN, Min(CURSOR_MAX, newSize))
+  
   ; RegWrite(newSize, "REG_DWORD", sizeKey, valueName) ; Uncomment if you want to persist the value
   DllCall("SystemParametersInfo", "UInt", SPI_SETCURSORS, "UInt", 0, "Ptr", newSize, "UInt", SPIF_UPDATEINIFILE | SPIF_SENDCHANGE)
   ToolTip "Cursor Size: " Round((newSize - CURSOR_STEP) / 16)
@@ -35,16 +40,14 @@ SetCursorSize(newSize) {
 ; │ Hotkeys for increasing and decreasing the mouse cursor size.                               │
 ; │ {}                                                                                         │
 ; ╰────────────────────────────────────────────────────────────────────────────────────────────╯
-CapsLock & PgUp:: {
-  ; Ctrl+Win+F3 to increase mouse cursor size
-  currSize := RegRead(sizeKey, valueName, CURSOR_MIN)
-  SetCursorSize(currSize + CURSOR_STEP)
+#PgUp:: {
+  ; [Win]+[PgUp] to increase mouse cursor size
+  SetCursorSize(+1)
 }
 
-CapsLock & PgDn:: {
-  ; Ctrl+Alt+F3 to decrease mouse cursor size
-  currSize := RegRead(sizeKey, valueName, CURSOR_MIN)
-  SetCursorSize(currSize - CURSOR_STEP)
+#PgDn:: {
+  ; [Win]+[PgDn] to decrease mouse cursor size
+  SetCursorSize(-1)
 }
 
 OnExit ExitFunc
