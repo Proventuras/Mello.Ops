@@ -1,5 +1,9 @@
 #Requires AutoHotkey v2.0
-
+; ╭════════════════════════════════════════════════════════════════════════════════════════════════════════════════─╮
+; ║  APP-AUTOMATE.AHK                                                                                               ║
+; ║    - Manages the location and dimensions of the Active Window using performant DllCalls.                        ║
+; ║    - Refactored for maximum readability, maintainability, and performance.                                      ║
+; ╰═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╯
 ;╭──────────────────────────────────────────╮
 ;│ APPS & AUTOMATIONS                       │
 ;╰──────────────────────────────────────────╯

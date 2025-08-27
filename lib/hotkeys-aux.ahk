@@ -16,7 +16,7 @@ CapsLock & F12::F22
 ; ╭─────────────────────────────────────────────────────────────╮
 ; │  Helper Function: Wrapper for MsgBox for undefined HotClix  │
 ; ╰─────────────────────────────────────────────────────────────╯
-ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined", timeout_in_seconds := 3) {
+ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined", app_icon := 0, timeout_in_seconds := 3) {
   ; Dictionary for the hotkeys
   Switch A_ThisHotkey
   {
@@ -29,7 +29,7 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
     case "F19": trigger_key := "⌨️  [F19] `n🖱️  [Top_Back]          `n#️⃣  [Num_7]"
     case "F20": trigger_key := "⌨️  [F20] `n🖱️  [G + Top_Back]      `n#️⃣  [Num_###?]"
     case "F21": trigger_key := "⌨️  [F21] `n🖱️  [G + Side_Forward]  `n#️⃣  [Num_4]"
-    ; case "F22": trigger_key := "⌨️  [F22] `n🖱️  [G + OnBoard_Cycle] `n#️⃣  [Num_2]"
+      ; case "F22": trigger_key := "⌨️  [F22] `n🖱️  [G + OnBoard_Cycle] `n#️⃣  [Num_2]"
     case "F23": trigger_key := "⌨️  [F23] `n🖱️  [G + Btn_Right]     `n#️⃣  [Num_9]"
     case "F24": trigger_key := "⌨️  [F24] `n🖱️  [G + Side_Back]     `n#️⃣  [Num_1]"
   }
@@ -44,7 +44,31 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   theTimeout := "T" . timeout_in_seconds
   theOptions := Format("{1} {2}", theTimeout, (theIcon + theModality))
 
-  MsgBox theMsg, A_ScriptName, theOptions
+  static guiMsg := Gui("+AlwaysOnTop -Caption +ToolWindow", "Info")
+  guiMsg.Destroy() ; Ensure previous instance is closed
+
+  guiMsg := Gui("+AlwaysOnTop -Caption +ToolWindow", "Info")
+  guiMsg.BackColor := "White"
+  guiMsg.SetFont("s12", "Segoe UI")
+
+  ; Application logo (emoji) on top
+  guiMsg.Add("Picture",)
+
+  ; Application in Use
+  guiMsg.Add("Text", "Center xm y+10 h30", app_in_use)
+
+  ; Main message
+  guiMsg.Add("Text", "Center xm y+10", trigger_key)
+  guiMsg.Add("Text", "Center xm y+10", message_string)
+
+  ; Center on screen
+  guiMsg.Show("AutoSize Center")
+
+  ; Apply rounded corners using SetRegion after showing the GUI
+  guiMsg.GetClientPos(, , &w, &h)
+  WinSetRegion("0-0 w" . w . " h" . h . " r16-16", guiMsg.Hwnd)
+
+  SetTimer () => guiMsg.Destroy(), -timeout_in_seconds * 1000
 }
 
 #HotIf (Aux_HotKeySupport = true)
@@ -86,12 +110,12 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   #HotIf WinActive(" - Gmail and ")
   app_gmail := "📫 GMail"
   F13:: Click
-  F14:: Send "k"
+  F14:: Send "k"                      ; Navigate to previous message
   F15:: ModalMsg "", app_gmail, 2
-  F16:: Send "j"
-  F17:: ModalMsg "", app_gmail, 2
-  F18:: ModalMsg "", app_gmail, 2
-  F19:: ModalMsg "", app_gmail, 2
+  F16:: Send "j"                      ; Navigate to next message
+  F17:: Send "+u"                     ; Mark as unread
+  F18:: Send "{z}"                    ; Undo last action
+  F19:: Send "+i"                     ; Mark as read
   F20:: ModalMsg "", app_gmail, 2
   F21:: ModalMsg "", app_gmail, 2
   ; F22:: ModalMsg "", app_gmail, 2

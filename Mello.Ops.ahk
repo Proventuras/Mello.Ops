@@ -23,13 +23,15 @@ global __Uptime := 99999 ; Placeholder for uptime, will be updated later
 global thisapp_name := "Mello.Ops"
 global thisapp_version := "0.9.1_alpha (2024-06-17)"
 global process_theme := ""
-global app_ico := ".\media\icons\mello-leaf.ico"
+global app_ico := ".\media\icons\Mello.Ops.ico"
 global toggle_sound_file_startrun := A_Windir "\Media\Windows Unlock.wav"
 global toggle_sound_file_enabled := ".\media\sounds\01_enable.wav"
 global toggle_sound_file_disabled := ".\media\sounds\01_disable.wav"
 global sound_file_start := ".\media\sounds\start-13691.wav"
 global sound_file_stop := ".\media\sounds\stop-13692.wav"
 global regkey_sticky_keys := "HKEY_CURRENT_USER\Control Panel\Accessibility\StickyKeys"
+global Aux_HotKeySupport := true
+global Aux_HotStringSupport := true
 
 ; --- Splash Screen Modal ---
 global app_splashGUI := Gui("+AlwaysOnTop +ToolWindow -Caption", "Mello.Ops Splash")
@@ -70,19 +72,18 @@ if !FileExist(".\custom\_custom_functions.ahk") {
 │ LIBRARY INCLUDES       │
 ╰────────────────────────╯
 */
-#Include ".\lib\_traymenu.ahk"
-#Include ".\lib\_help_about.ahk"
-#Include ".\lib\_apps_automations.ahk"
-#Include ".\lib\_hotkeys.ahk"
-#Include ".\lib\_hotstrings.ahk"
-#Include ".\lib\_alerts.ahk"
-#Include ".\lib\_high_fkeys.ahk"
-#include ".\lib\_arpeggios.ahk"
-#Include ".\lib\_window_mgr.ahk"
-#Include ".\lib\WiseGui.ahk"
-#include ".\lib\_virtual_desktops.ahk"
-; #Include ".\lib\_time_functions.ahk"
-; #Include ".\lib\_screen_notifications.ahk"
+#Include <_traymenu>
+#Include <_help_about>
+#Include <app-automate>
+#Include <hotkeys-core>
+; #Include <hotstrings-core>  ; TODO: Split the hotstrings-aux into two files: hotstrings-core and hotstrings-aux
+#Include <hotstrings-aux>
+#Include <hotkeys-aux>
+#include <arpeggios>
+#include <winui-mgmt>
+#Include <cursor-mgmt>
+#Include %A_ScriptDir%\lib\WiseGui.ahk ; TODO: Remove this line when WiseGui is available
+; #Include <_alerts>  ; TODO: Under construction
 
 
 /*
@@ -174,19 +175,3 @@ EndScript(*)
 #f:: {
   Run "explorer.exe ~"
 }
-; CapsLock & p:: Send "^+x"
-
-; #SuspendExempt
-;   ^!s:: Suspend  ; Ctrl+Alt+S
-; #SuspendExempt False
-
-/* ╭───────────────------------╮
-   │ Dynamic Tray Menu updates │  
-   ╰------------───────────────╯ */
-; #HotIf !WinActive("ahk_exe vmware.exe") or !WinActive("ahk_class VMUIFrame")
-;   TraySetIcon tray_icon_normal
-; #HotIf
-
-; #HotIf WinActive("ahk_exe vmware.exe") and WinActive("ahk_class VMUIFrame")
-;   TraySetIcon tray_icon_suspend
-; #HotIf

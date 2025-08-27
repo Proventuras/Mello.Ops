@@ -1,17 +1,17 @@
 #Requires AutoHotkey v2.0
 
-/*╭─────────────────────────────────────────────────────────╮
-  │  [CapsLock] ARPEGGIOS                                   │
-  │  Hit the [CapsLock]+[?] To enter the MODE, then         │
-  │  follow it with another key to complete the ARPEGGIO.   │
-  ├─────────────────────────────────────────────────────────┤
-  │  MODES:                                                 │
-  │  [B] BROWSE WEB     Open your favorite sites            │
-  │  [O] OPEN APP       Open Application Mode               │
-  │  [P] POWERTOYS      Shortcuts to PowerToys utils        │
-  │  [C] CLIP UTILs     Cliboard Utilities                  │
-  │  [U] UTILITIES      Utilities                           │
-╰─────────────────────────────────────────────────────────╯*/
+; ╭════════════════════════════════════════════════════════════════════════════════════════════════════════════════─╮
+; ║  ARPEGGIOS.AHK                                                                                                  ║
+; ║    Hit the [CapsLock]+[?] To enter the MODE, then follow it with another key to complete the ARPEGGIO.          ║
+; ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+; ║  MODES:                                                                                                         ║
+; ║  [B] BROWSE WEB     Open your favorite sites                                                                    ║
+; ║  [O] OPEN APP       Open Application Mode                                                                       ║
+; ║  [P] POWERTOYS      Shortcuts to PowerToys utils                                                                ║
+; ║  [C] CLIP UTILs     Cliboard Utilities                                                                          ║
+; ║  [U] UTILITIES      Utilities                                                                                   ║
+; ╰═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╯
+
 ; ╭─────────────────────────────────╮
 ; │  Helper Function: KeyWaitAny()  │
 ; ╰─────────────────────────────────╯
@@ -73,7 +73,7 @@ ShowArpeggioSplash(message) {
     arpeGUI := ""
   }
 
-; Display a dialog in the bottom right corner with a list, fade in/out
+  ; Display a dialog in the bottom right corner with a list, fade in/out
   arpeGUI := Gui("+AlwaysOnTop -Caption +ToolWindow")
   arpeGUI.BackColor := "White"
   arpeGUI.SetFont("s11", "Segoe UI")
@@ -137,7 +137,7 @@ CapsLock & o::
   AW_BLEND := 0x00080000, AW_HIDE := 0x00010000
   DllCall("user32.dll\AnimateWindow", "Ptr", arpeGUI.hwnd, "UInt", 250, "UInt", AW_BLEND | AW_HIDE)
   arpeGUI.Destroy()
-  
+
   ; If the user did not press a key, exit the function
   if (retKeyHook = "") {
     return

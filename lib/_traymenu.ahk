@@ -3,7 +3,7 @@
 ; ╭───────────╮
 ; │ VARIABLES │
 ; ╰───────────╯
-tray_icon_normal := ".\media\icons\mello-leaf.ico"
+tray_icon_normal := ".\media\icons\Mello.Ops.ico"
 tray_icon_pause_all := ".\media\icons\sl-pause.ico"
 tray_icon_pause_hotkeys := ".\media\icons\sl-pause.ico"
 tray_icon_pause_hotstrings := ".\media\icons\sl-pause-hs.ico"
@@ -12,15 +12,15 @@ traymenu_icon_checked := ".\media\icons\checked.ico"
 traymenu_icon_unchecked := ".\media\icons\unchecked.ico"
 
 ; custom tray menu items
-trayitem_app_ref := thisapp_name
+trayitem_app_ref := "About Mello.Ops`t[Ctrl]+[⊞]+[Alt]+[F1]"
 trayitem_app_ref_ico := tray_icon_normal
 trayitem_reload := "&Reload Script`t[Ctrl]+[⊞]+[Alt]+[R]"
 trayitem_reload_ico := ".\media\icons\reload.ico"
-trayitem_toggle_hstrings := "Aux Hot&Strings"            ; `t[Ctrl]+[⊞]+[Alt]+[S]
+trayitem_toggle_hstrings := "&Text Expansions"            ; `t[Ctrl]+[⊞]+[Alt]+[S]"
 trayitem_toggle_hstrings_ico := traymenu_icon_checked
-trayitem_toggle_hkeys := "Aux Hot&Keys"                  ; `t[Ctrl]+[⊞]+[Alt]+[K]
+trayitem_toggle_hkeys := "&Keyboard Shortcuts"                  ; `t[Ctrl]+[⊞]+[Alt]+[K]"
 trayitem_toggle_hkeys_ico := traymenu_icon_checked
-trayitem_debug := "Debug Tools"
+trayitem_debug := "AutoHotkey Native Tools"
 trayitem_debug_ico := ".\media\icons\debug.ico"
 trayitem_ahkhelp := "AutoHotkey Help`t[Ctrl]+[⊞]+[Alt]+[F2]"
 trayitem_ahkhelp_ico := ".\media\icons\help.ico"
@@ -32,7 +32,7 @@ trayitem_runatstartup := "Run at Startup"
 trayitem_openappdir := "Open script &folder`t[Ctrl]+[⊞]+[Alt]+[F]"
 trayitem_openappdir_ico := ".\media\icons\icons8-code-folder-32.ico"
 
-this_script_shorcut := A_Startup "\" SubStr(A_ScriptName, 1, StrLen(A_ScriptName) - 4) ".lnk"
+this_script_shorcut := A_Startup " \" SubStr(A_ScriptName, 1, StrLen(A_ScriptName) - 4) ".lnk"
 if (FileExist(this_script_shorcut)) {
     trayitem_runatstartup_ico := traymenu_icon_checked
 }
@@ -80,46 +80,75 @@ DisplayTrayMenu() {
     ; Define the menu items
     Tray.Add(trayitem_app_ref, ShowHelpAbout)
     Tray.SetIcon(trayitem_app_ref, trayitem_app_ref_ico)
-
+    
     Tray.Add(trayitem_reload, ReloadAndReturn)
     Tray.SetIcon(trayitem_reload, trayitem_reload_ico)
+
+    Tray.Add(trayitem_openappdir, OpenScriptDir)
+    Tray.SetIcon(trayitem_openappdir, trayitem_openappdir_ico)
 
     Tray.Add(trayitem_edit, EditAndReturn)
     Tray.SetIcon(trayitem_edit, trayitem_edit_ico)
 
-    ; Enable Hotstrings as the default value
     Tray.Add(trayitem_toggle_hstrings, ToggleAuxHotstrings)
-    global Aux_HotStringSupport := true
-    ; Tray.Check(trayitem_toggle_hstrings)
     Tray.SetIcon(trayitem_toggle_hstrings, trayitem_toggle_hstrings_ico)
 
-    ; Enable HotKeys as the default value
     Tray.Add(trayitem_toggle_hkeys, ToggleAuxHotkeys)
-    global Aux_HotKeySupport := true
-    ; Tray.Check(trayitem_toggle_hkeys)
     Tray.SetIcon(trayitem_toggle_hkeys, trayitem_toggle_hkeys_ico)
 
     Tray.Add(trayitem_runatstartup, ToggleRunAtStartup)
     Tray.SetIcon(trayitem_runatstartup, trayitem_runatstartup_ico)
 
     Tray.Add() ; separator
-    ; Tray.Add(trayitem_debug, ShowListLines)
-    DebugMenu := Menu()
-    Tray.Add(trayitem_debug, DebugMenu)
-    Tray.SetIcon(trayitem_debug, trayitem_debug_ico)
-    DebugMenu.Add("Key & Mouse Button History", ShowListLines)
-    DebugMenu.Add("Coming: KeyHistory", ShowListLines)
-    DebugMenu.Disable("Coming: KeyHistory")
-    ; DebugMenu.Add("List Hotkeys", ListSimpleHotkeys)
-    DebugMenu.Add("Coming: ListVars", ShowListLines)
-    DebugMenu.Disable("Coming: ListVars")
-    DebugMenu.Add("AutoHotkey WindowSpy", ShowAHKSpy)
-    DebugMenu.SetIcon("AutoHotKey WindowSpy", ".\media\icons\window-spy.ico")
 
-    Tray.Add(trayitem_ahkhelp, ShowHelp)
-    Tray.SetIcon(trayitem_ahkhelp, trayitem_ahkhelp_ico)
-    Tray.Add(trayitem_openappdir, OpenScriptDir)
-    Tray.SetIcon(trayitem_openappdir, trayitem_openappdir_ico)
+    ; AutoHotkey Native Tools
+    AhkNativeMenu := Menu()
+    Tray.Add("AutoHotkey Native Tools", AhkNativeMenu)
+    AhkNativeMenu.Add("AutoHotkey WindowSpy", ShowAHKSpy)
+    AhkNativeMenu.Add(trayitem_ahkhelp, ShowHelp)
+    AhkNativeMenu.Add("Key & Mouse Button History", ShowListLines)
+    AhkNativeMenu.Add("ListHotKeys", ListSimpleHotkeys)
+    AhkNativeMenu.Add("Coming: KeyHistory", ShowListLines)
+    AhkNativeMenu.Disable("Coming: KeyHistory")
+    AhkNativeMenu.Add("Coming: ListVars", ShowListLines)
+    AhkNativeMenu.Disable("Coming: ListVars")
+
+    ; Options
+    OptionsMenu := Menu()
+    Tray.Add("Options", OptionsMenu)
+
+    MouseMenu := Menu()
+    OptionsMenu.Add("Mouse Cursor Actions", MouseMenu)
+    MouseMenu.Add("Increase Mouse Cursor Size", IncCursorSize)
+    MouseMenu.Disable("Increase Mouse Cursor Size")
+    MouseMenu.Add("Decrease Mouse Cursor Size", DecCursorSize)
+    MouseMenu.Disable("Decrease Mouse Cursor Size")
+    MouseMenu.Add("Increase Mouse Cursor Speed", IncMouseSpeed)
+    MouseMenu.Disable("Increase Mouse Cursor Speed")
+    MouseMenu.Add("Decrease Mouse Cursor Speed", DecMouseSpeed)
+    MouseMenu.Disable("Decrease Mouse Cursor Speed")
+
+    OptionsMenu.Add("Toggle Light/Dark Theme", ToggleTheme)
+    OptionsMenu.Disable("Toggle Light/Dark Theme")
+    OptionsMenu.Add("Toggle Show/Auto-Hide Taskbar", ToggleTaskbar)
+    OptionsMenu.Disable("Toggle Show/Auto-Hide Taskbar")
+    OptionsMenu.Add("Toggle Show/Hide Desktop Icons", ToggleDesktopIcons)
+    OptionsMenu.Disable("Toggle Show/Hide Desktop Icons")
+
+    Tray.Add() ; separator
+
+    ; Custom Tools
+    CustomMenu := Menu()
+    Tray.Add("Custom Tools", CustomMenu)
+    CustomMenu.Add("Custom Notes", ShowCustomNotes)
+    CustomMenu.Disable("Custom Notes")
+    CustomMenu.Add("Focus Window Highlighter", ToggleWindowHighlighter)
+    CustomMenu.Disable("Focus Window Highlighter")
+    CustomMenu.Add("OverFlow Notifier", ToggleOverflowNotifier)
+    CustomMenu.Disable("OverFlow Notifier")
+    CustomMenu.Add("Chime", ToggleChime)
+    CustomMenu.Disable("Chime")
+
     Tray.Add() ; separator
 
     Tray.Add(trayitem_exit, EndScript)
@@ -127,21 +156,13 @@ DisplayTrayMenu() {
 
     ; Set the default menu item for double-clicking the tray icon
     Tray.Default := trayitem_app_ref
-
-    ; Make the tray menu when the tray icon is also left-clicked
-    OnMessage 0x404, Received_AHK_NOTIFYICON
-    Received_AHK_NOTIFYICON(wParam, lParam, nMsg, hwnd) {
-        if lParam = 0x202 { ; WM_LBUTTONUP
-            A_TrayMenu.Show
-            return 1
-        }
-    }
 }
 
 ; ╭─────────────────────────────────────────────────────────────────────╮
 ; │  Enable or Disable Auxillary hotkeys defined in AUX_HOTSTRINGS.AHK  │
 ; ╰─────────────────────────────────────────────────────────────────────╯
-ToggleAuxHotstrings(*) {
+ToggleAuxHotstrings(*)
+{
     global Aux_HotStringSupport := !Aux_HotStringSupport
     if (Aux_HotStringSupport = true) {
         IndicateToggle("Auxillary HotStrings", "hotkeys", true, true, true)
@@ -157,7 +178,8 @@ ToggleAuxHotstrings(*) {
 ; ╭──────────────────────────────────────────────────────────────────╮
 ; │  Enable or Disable Auxillary hotkeys defined in AUX_HOTKEYS.AHK  │
 ; ╰──────────────────────────────────────────────────────────────────╯
-ToggleAuxHotkeys(*) {
+ToggleAuxHotkeys(*)
+{
     global Aux_HotKeySupport := !Aux_HotKeySupport
     if (Aux_HotKeySupport = true) {
         IndicateToggle("Auxillary HotKeys", "hotstrings", true, true, true)
@@ -173,10 +195,11 @@ ToggleAuxHotkeys(*) {
 ; ╭─────────────────────────────────────────────────╮
 ; │  This will allow the script to run at startup.  │
 ; ╰─────────────────────────────────────────────────╯
-ToggleRunAtStartup(*) {
+ToggleRunAtStartup(*)
+{
 
     ; DEBUG
-    global this_script_shorcut := A_Startup "\" SubStr(A_ScriptName, 1, StrLen(A_ScriptName) - 4) ".lnk"
+    global this_script_shorcut := A_Startup " \" SubStr(A_ScriptName, 1, StrLen(A_ScriptName) - 4) ".lnk"
 
     run A_Startup
     if (FileExist(this_script_shorcut)) {
@@ -247,7 +270,8 @@ IndicateToggle(AppFeatureName, AppFeature, IsEnabled := false, DisplayChange := 
 ╭────────────────╮
 │ ShowListLines  │
 ╰────────────────╯ */
-ShowListLines(*) {
+ShowListLines(*)
+{
     ListLines
 }
 
@@ -255,7 +279,8 @@ ShowListLines(*) {
 ╭────────────────────╮
 │ ListSimpleHotkeys  │
 ╰────────────────────╯ */
-ListSimpleHotkeys(*) {
+ListSimpleHotkeys(*)
+{
     ListHotkeys
 }
 
@@ -263,7 +288,8 @@ ListSimpleHotkeys(*) {
 ╭──────────────╮
 │ DisplayAbout │
 ╰──────────────╯ */
-DisplayAbout(*) {
+DisplayAbout(*)
+{
     ; MsgBox "You selected " ItemName " (position " ItemPos ")"
     HelpMessage := "
     (
@@ -281,7 +307,8 @@ DisplayAbout(*) {
 ╭───────────────╮
 │ OpenScriptDir │
 ╰───────────────╯ */
-OpenScriptDir(*) {
+OpenScriptDir(*)
+{
     Run A_ScriptDir
 }
 
@@ -289,7 +316,8 @@ OpenScriptDir(*) {
 ╭──────────╮
 │ ShowHelp │
 ╰──────────╯ */
-ShowHelp(*) {
+ShowHelp(*)
+{
     ; Open the regular help file
     ; Determine AutoHotkey's location:
     if A_AhkPath
@@ -312,7 +340,8 @@ ShowHelp(*) {
 ╭────────────╮
 │ ShowAHKSpy │
 ╰────────────╯ */
-ShowAHKSpy(*) {
+ShowAHKSpy(*)
+{
     ; Open the regular help file
     ; Determine AutoHotkey's location:
     if A_AhkPath
@@ -329,4 +358,26 @@ ShowAHKSpy(*) {
     return
 }
 
-
+; Placeholder functions for disabled menu items
+IncCursorSize(*)
+{}
+DecCursorSize(*)
+{}
+IncMouseSpeed(*)
+{}
+DecMouseSpeed(*)
+{}
+ToggleTheme(*)
+{}
+ToggleTaskbar(*)
+{}
+ToggleDesktopIcons(*)
+{}
+ShowCustomNotes(*)
+{}
+ToggleWindowHighlighter(*)
+{}
+ToggleOverflowNotifier(*)
+{}
+ToggleChime(*)
+{}

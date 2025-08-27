@@ -4,6 +4,14 @@
 
 ## Version 1.0 (unreleased)
 
+Released 2024-07-01
+
+- Major refactor of the codebase for improved performance
+- Added new features for enhanced user experience
+- Improved documentation and examples
+- Fixed several bugs reported by users
+- Updated dependencies to latest versions
+
 ### Version 0.9.1_alpha
 
 Released 2024-06-17
