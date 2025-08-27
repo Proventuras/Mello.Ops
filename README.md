@@ -25,7 +25,7 @@ Check out the [full list of hotkeys and](docs/README.md#hotkeys) and [features](
 Just open PowerShell and run this single command. It doesn't even have to open it as an Administrative prompt. All will be going into your profile's local Appdata/Mello.Ops directory:
 
 ```powershell
-iex "& { $(irm 'https://raw.githubusercontent.com/Proventuras/Mello.Ops/main/Start-Mello.ps1') }"
+iex "& { $(irm 'https://raw.githubusercontent.com/Proventuras/Mello.Ops/refs/heads/main/Start-Mello.Ops.ps1') }"
 ```
 
 This will:
