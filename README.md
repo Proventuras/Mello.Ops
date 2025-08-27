@@ -25,7 +25,7 @@ Check out the [full list of hotkeys and](docs/README.md#hotkeys) and [features](
 Just open PowerShell and run this single command. It doesn't even have to open it as an Administrative prompt. All will be going into your profile's local Appdata/Mello.Ops directory:
 
 ```powershell
-iex "& { $(irm 'https://raw.githubusercontent.com/voltaire-toledo/Mello.Ops/main/Start-Mello.ps1') }"
+iex "& { $(irm 'https://raw.githubusercontent.com/Proventuras/Mello.Ops/main/Start-Mello.ps1') }"
 ```
 
 This will:
@@ -47,7 +47,7 @@ Prefer the classic way? No problem!
 1. **Download the repo:**
 
    ```powershell
-   Invoke-WebRequest 'https://github.com/voltaire-toledo/Mello.Ops/archive/refs/heads/main.zip' -OutFile .\Mello.Ops.zip
+   Invoke-WebRequest 'https://github.com/Proventuras/Mello.Ops/archive/refs/heads/main.zip' -OutFile .\Mello.Ops.zip
    Expand-Archive .\Mello.Ops.zip -DestinationFolder $env:APPDATA -Force
    Remove-Item .\Mello.Ops.zip
    cd $env:APPDATA\Mello.Ops-main
@@ -81,13 +81,13 @@ Just right-click the tray icon and select **"Run at Startup"**. Easy!
 ## 🤝 Contributing
 
 Pull requests, ideas, and fun new hotkeys are always welcome!  
-Open an [issue](https://github.com/voltaire-toledo/Mello.Ops/issues) or submit a PR.
+Open an [issue](https://github.com/Proventuras/Mello.Ops/issues) or submit a PR.
 
 ---
 
 ## 💬 Questions? Suggestions?
 
-Ask away in the [issues](https://github.com/voltaire-toledo/Mello.Ops/issues) or start a discussion.  
+Ask away in the [issues](https://github.com/Proventuras/Mello.Ops/issues) or start a discussion.  
 We love making Windows more fun and productive!
 
 ---

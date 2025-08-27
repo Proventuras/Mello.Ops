@@ -265,7 +265,7 @@ ShowAboutDialog(*) {
 
   ; First Line with link to docs
   aboutDlg.Add("Link", "x9 y12 h23",
-    "All items below are frequently used features. Visit the <a href=`"https://github.com/voltaire-toledo/Mello.Ops/tree/main/docs`">Official Documentation</a> for a more comprehensive list."
+    "All items below are frequently used features. Visit the <a href=`"https://github.com/Proventuras/Mello.Ops/tree/main/docs`">Official Documentation</a> for a more comprehensive list."
   )
 
   ; Status Bar
