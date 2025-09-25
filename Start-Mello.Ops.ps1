@@ -32,6 +32,7 @@ $StartMenuFolderPath = Join-Path -Path $StartMenuProgramsPath -ChildPath $StartM
 $ShortcutPath = Join-Path -Path $StartMenuFolderPath -ChildPath $ShortcutName
 $TargetPath = Join-Path -Path $AHKBinPath -ChildPath $AHKExecutableName
 $isRunFromUrl = $false
+$ForceAHKDownload = $true
 #endregion
 
 #region Helper Functions
@@ -115,9 +116,9 @@ function Get-AutoHotkey {
 
     # Select the best .zip asset (largest .zip if multiple)
     $asset = $release.assets |
-             Where-Object { $_.name -match '\.zip$' } |
-             Sort-Object -Property size -Descending |
-             Select-Object -First 1
+    Where-Object { $_.name -match '\.zip$' } |
+    Sort-Object -Property size -Descending |
+    Select-Object -First 1
 
     if (-not $asset) {
       Write-Error "No .zip asset found in the latest AutoHotkey release."
@@ -136,7 +137,20 @@ function Get-AutoHotkey {
       $dlHeaders['Authorization'] = "token $env:GITHUB_TOKEN"
     }
 
-    Invoke-WebRequest -Uri $downloadUrl -Headers $dlHeaders -OutFile $AHKZipPath -ErrorAction Stop
+    try {
+      # Allow more redirections for GitHub -> CDN redirects
+      Invoke-WebRequest -Uri $downloadUrl -Headers $dlHeaders -OutFile $AHKZipPath -MaximumRedirection 20 -UseBasicParsing -ErrorAction Stop
+    }
+    catch {
+      Write-Warning "Invoke-WebRequest failed: $($_.Exception.Message). Attempting BITS transfer fallback..."
+      try {
+        Start-BitsTransfer -Source $downloadUrl -Destination $AHKZipPath -ErrorAction Stop
+      }
+      catch {
+        Write-Error "Fallback BITS download failed: $($_.Exception.Message)"
+        throw
+      }
+    }
 
     Expand-Archive -Path $AHKZipPath -DestinationPath $AHKBinPath -Force
     Remove-Item -Path $AHKZipPath -Force
@@ -216,7 +230,7 @@ function Install-FromUrl {
   }
 
   # Ensure AutoHotkey is downloaded and extracted.
-  if (!(Test-Path -Path $AHKBinPath)) {
+  if ($ForceAHKDownload -or -not (Test-Path -Path $TargetPath)) {
     if (!(Get-AutoHotkey)) {
       Write-Error "Failed to set up AutoHotkey. Exiting script."
       exit 1
@@ -248,7 +262,7 @@ function Run-FromLocal {
   $TargetPath = Join-Path -Path $AHKBinPath -ChildPath $AHKExecutableName
 
   # Ensure AutoHotkey is downloaded and extracted to the local ahkbin.
-  if (!(Test-Path -Path $AHKBinPath)) {
+  if ($ForceAHKDownload -or -not (Test-Path -Path $TargetPath)) {
     if (!(Get-AutoHotkey)) {
       Write-Error "Failed to set up AutoHotkey for local run. Exiting script."
       exit 1
@@ -280,11 +294,12 @@ function Run-FromLocal {
 
 #region Main()
 # Determine if the script was invoked from a URL or from a file.
- $isRunFromUrl = ($null -eq $MyInvocation.MyCommand.Path -or $MyInvocation.MyCommand.Path -eq '-')
- if ($isRunFromUrl) {
-   Write-Host "$MyInvocation.MyCommand.Path is null or empty. Assuming script is run from URL."
-   Install-FromUrl
- } else {
-   Run-FromLocal
- }
+$isRunFromUrl = ($null -eq $MyInvocation.MyCommand.Path -or $MyInvocation.MyCommand.Path -eq '-')
+if ($isRunFromUrl) {
+  Write-Host "$MyInvocation.MyCommand.Path is null or empty. Assuming script is run from URL."
+  Install-FromUrl
+}
+else {
+  Run-FromLocal
+}
 #endregion
