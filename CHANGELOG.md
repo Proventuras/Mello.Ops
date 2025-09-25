@@ -4,8 +4,7 @@
 
 
 ### Version 0.9.1_alpha
-
-Released 2024-06-17
+**Released 2024-06-17**
 - Major refactor of the codebase for improved performance
 - Added new features for enhanced user experience
 - Improved documentation and examples
