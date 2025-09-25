@@ -54,30 +54,93 @@ function New-Directory {
   return $true
 }
 
+# function Get-AutoHotkey {
+#   # ╭─────────────────────────────────────────────────────╮
+#   # │ Function: Get-AutoHotkey                            │
+#   # | Download and extract an approved AutoHotkey version │
+#   # ╰─────────────────────────────────────────────────────╯
+#   if (!(New-Directory -Path $AHKBinPath)) {
+#     return $false
+#   }
+#   Write-Host "Downloading AutoHotkey..."
+#   try {
+#     # Force strong TLS
+#     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+#     # Set up headers to mimic curl
+#     $headers = @{
+#         "User-Agent" = "curl/8.14.1"
+#         "Accept"     = "*/*"
+#         "Host"       = "www.autohotkey.com"
+#     }
+
+#     # Run the request
+#     Invoke-WebRequest -Uri $AHKZipUrl -Headers $headers -OutFile $AHKZipPath -ErrorAction Stop
+#     Expand-Archive -Path $AHKZipPath -DestinationPath $AHKBinPath -Force
+#     Remove-Item -Path $AHKZipPath -Force
+#     Write-Host "AutoHotkey downloaded and extracted to '$AHKBinPath'."
+#     return $true
+#   }
+#   catch {
+#     Write-Error "Failed to download or extract AutoHotkey: $($_.Exception.Message)"
+#     return $false
+#   }
+# }
+
 function Get-AutoHotkey {
   # ╭─────────────────────────────────────────────────────╮
   # │ Function: Get-AutoHotkey                            │
-  # | Download and extract an approved AutoHotkey version │
+  # | Resolve latest AutoHotkey release on GitHub and     │
+  # | download the ZIP asset, then extract it to $AHKBinPath
   # ╰─────────────────────────────────────────────────────╯
   if (!(New-Directory -Path $AHKBinPath)) {
     return $false
   }
-  Write-Host "Downloading AutoHotkey..."
+
+  Write-Host "Resolving latest AutoHotkey release from GitHub..."
   try {
     # Force strong TLS
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-    # Set up headers to mimic curl
     $headers = @{
-        "User-Agent" = "curl/8.14.1"
-        "Accept"     = "*/*"
-        "Host"       = "www.autohotkey.com"
+      'User-Agent' = 'PowerShell'
+      'Accept'     = 'application/vnd.github.v3+json'
+    }
+    if ($env:GITHUB_TOKEN) {
+      $headers['Authorization'] = "token $env:GITHUB_TOKEN"
     }
 
-    # Run the request
-    Invoke-WebRequest -Uri $AHKZipUrl -Headers $headers -OutFile $AHKZipPath -ErrorAction Stop
+    $apiUrl = 'https://api.github.com/repos/AutoHotkey/AutoHotkey/releases/latest'
+    $release = Invoke-RestMethod -Uri $apiUrl -Headers $headers -ErrorAction Stop
+
+    # Select the best .zip asset (largest .zip if multiple)
+    $asset = $release.assets |
+             Where-Object { $_.name -match '\.zip$' } |
+             Sort-Object -Property size -Descending |
+             Select-Object -First 1
+
+    if (-not $asset) {
+      Write-Error "No .zip asset found in the latest AutoHotkey release."
+      return $false
+    }
+
+    $downloadUrl = $asset.browser_download_url
+    Write-Host "Downloading $($asset.name) from $downloadUrl ..."
+
+    # Use a download header appropriate for binary content
+    $dlHeaders = @{
+      'User-Agent' = 'PowerShell'
+      'Accept'     = 'application/octet-stream'
+    }
+    if ($env:GITHUB_TOKEN) {
+      $dlHeaders['Authorization'] = "token $env:GITHUB_TOKEN"
+    }
+
+    Invoke-WebRequest -Uri $downloadUrl -Headers $dlHeaders -OutFile $AHKZipPath -ErrorAction Stop
+
     Expand-Archive -Path $AHKZipPath -DestinationPath $AHKBinPath -Force
     Remove-Item -Path $AHKZipPath -Force
+
     Write-Host "AutoHotkey downloaded and extracted to '$AHKBinPath'."
     return $true
   }
