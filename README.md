@@ -1,7 +1,8 @@
 # ⌨️ Mello.Ops
 
 Welcome to **Mello.Ops** - the all-in-one, supercharged AutoHotkey toolkit for Windows power users, keyboard tinkerers, and productivity wizards!  
-Unleash a world of hotkeys, automations, and clever tricks, all wrapped up in a friendly, customizable package.
+
+Unleash a world of hotkeys, text replacements, automations, and clever tricks, all wrapped up in a friendly, customizable package.
 
 ---
 
