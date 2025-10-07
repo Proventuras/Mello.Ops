@@ -107,7 +107,8 @@ ModalMsg(message_string := "No Action Assigned", app_in_use := "No App Defined",
   #HotIf
 
   ; GMail-specific hotkeys
-  #HotIf WinActive(" - Gmail and ")
+  #HotIf (WinActive(" - Gmail and ") OR WinActive(" - Gmail - Google Chrome"))
+  
   app_gmail := "📫 GMail"
   F13:: Click
   F14:: Send "k"                      ; Navigate to previous message

@@ -3,10 +3,7 @@
 **/ahkbin*/*
 
 # Ignore custom directory icon
-desktop.ini
-
-# Ignore the Mello.Ops custom functions for release
-# Only a generalized version should be included in the release
-custom/_custom_functions.ahk
-
+**/desktop.ini
+**/Thumbs.db
+**/.DS_Store
 
