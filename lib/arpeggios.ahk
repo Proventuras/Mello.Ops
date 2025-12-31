@@ -15,12 +15,11 @@
 ; ╭─────────────────────────────────╮
 ; │  Helper Function: KeyWaitAny()  │
 ; ╰─────────────────────────────────╯
-KeyWaitAny(*)
-{
+KeyWaitAny(*) {
   ; This function waits for a key to be pressed and returns the key name.
   ; It uses an InputHook to capture the keypress WITHIN a specific time frame (4 seconds).
   ; The key name is returned as a string.
-  ih := InputHook("L1 T4 M")
+  ih := InputHook("C L1 T4 M")
   ; ih.KeyOpt("{All}", "E")  ; End
   ih.Start()
   ih.Wait()
@@ -38,7 +37,7 @@ KeyWaitAny(*)
   ;       return
   ;   }
   ; return ih.EndKey  ; Return the key name
-
+  ; MsgBox "You entered: " ih.Input
   return ih.Input  ; Return the input string
 }
 
@@ -49,7 +48,7 @@ ShowArpeggioSplash(message, icon := "none") {
   global arpeGUI, arpeGUIWidth, arpeGUIHeight
 
   ; If the GUI already exists, destroy it first
-  If IsSet(arpeGUI) {
+  if IsSet(arpeGUI) {
     arpeGUI.Destroy()
     arpeGUI := ""
   }
@@ -68,33 +67,33 @@ ShowArpeggioSplash(message, icon := "none") {
   arpeGUI.Move(thismonRight - arpeGUIWidth - 20, thisMonBottom - arpeGUIHeight - 20)
 }
 ; ╭──────────────────────────────────────────╮
-; │  [CapsLock]+[o]. OPEN APPLICTATION Mode  │
+; │  ⊞ [Alt/⌥] o. OPEN APPLICTATION Mode   │
 ; ├──────────────────────────────────────────┤
-; │  [B] ✓ Beyond Compare 4                  │
-; │  [C] ✓ Visual Studio Code                |
-; │  [E] ✓ Epic Pen                          │
-; │  [N] ✓ Notion                            │
-; |  [O] ✓ Outlook                           │
-; |  [T] ✓ Windows Terminal                  │
-; |  [!] ✓ Windows Terminal (ADMIN)          │
-; │  [w] ✓ Warp Terminal                     │
+; │  [B] Beyond Compare                      │
+; │  [C] Visual Studio Code                  |
+; │  [E] Epic Pen                            │
+; │  [N] Notion                              │
+; |  [T] Windows Terminal                    │
+; |  [!] Windows Terminal (ADMIN)            │
+; │  [w] Warp Terminal                       │
 ; ├──────────────────────────────────────────┤
-; │  TODO: Possible Candidates               │
+; │  NOTE: Modify with [ShiftPossible Candidates               │
 ; │  [w] Terminal (WSL)                      │
 ; ╰──────────────────────────────────────────╯
-CapsLock & o::
+; CapsLock & o::
+!#o::
 {
   KeyWait "CapsLock"
   OptionWindow := "AppModeOptions"
 
   AppModeOptionsString := (
-    "!`t Windows Terminal (Admin)"
-    "`nB`t Beyond Compare 4"
-    "`nC`t VS Code"
-    "`nE`t Epic Pen"
-    "`nN`t Notion"
-    "`nT`t Windows Terminal"
-    "`nW`t Warp Terminal"
+    "`nb`t Beyond Compare 4"
+    "`nc`t VS Code"
+    "`ne`t Epic Pen"
+    "`nn`t Notion"
+    "`nN`t Notepad"
+    "`nt`t Windows Terminal"
+    "`nw`t Warp Terminal"
   )
 
   ShowArpeggioSplash(AppModeOptionsString)
@@ -106,71 +105,205 @@ CapsLock & o::
   DllCall("user32.dll\AnimateWindow", "Ptr", arpeGUI.hwnd, "UInt", 250, "UInt", AW_BLEND | AW_HIDE)
   arpeGUI.Destroy()
 
-  ; If the user did not press a key, exit the function
-  if (retKeyHook = "") {
-    return
+  ; Use a value switch on the captured key to avoid expression fall-through
+  switch retKeyHook
+  {
+    case "b":
+      LaunchApp("Beyond Compare 4")
+      return
+    case "c":
+      LaunchApp("Visual Studio Code")
+      return
+    case "e":
+      LaunchApp("Epic Pen")
+      return
+    case "n":
+      LaunchApp("Notion")
+      return
+    case "N":
+      LaunchApp("Notepad")
+      return
+    case "t":
+      ShowActionSplash("Starting Windows Terminal...")
+      LaunchTerminal()
+      arpeActionGUI.Destroy()
+      return
+    case "T":
+      ShowActionSplash("Starting Windows Terminal (Admin)...")
+      try {
+        Run "*RunAs wt.exe -w 0 new-tab --title Terminal(Admin) --suppressApplicationTitle"
+      }
+      arpeActionGUI.Destroy()
+      return
+    case "w":
+      LaunchApp("Warp", false)
+      return
+    case "": return
+    default:
+      MsgBox "Invalid key pressed: " retKeyHook
+      return
   }
-  If (retKeyHook = "b") {
-    ShowActionSplash("Starting Beyond Compare 4...")
-    LaunchApp("Beyond Compare 4")
-  }
-  Else If (retKeyHook = "c") {
-    ShowActionSplash("Starting Visual Studio Code...")
-    LaunchApp("Visual Studio Code")
-  }
-  Else If (retKeyHook = "e") {
-    ShowActionSplash("Starting Epic Pen...")
-    LaunchApp("Epic Pen")
-  }
-  Else If (retKeyHook = "n") {
-    ShowActionSplash("Starting Notion...")
-    LaunchApp("Notion")
-  }
-  ; Else If (retKeyHook = "o") {
-  ;   ShowActionSplash("Starting Outlook...")
-  ;   Send "^!+#o"
+  ; ; If the user did not press a key, exit the function
+  ; if (retKeyHook = "") {
+  ;   return
   ; }
-  ; Else If (retKeyHook = "p") {
-  ;   WiseGui(OptionWindow)
-  ;   SplashGUI("Starting MS PowerPoint...", 2000)
-  ;   Send "^!+#p"
+  ; if (retKeyHook = "b") {
+  ;   ShowActionSplash("Starting Beyond Compare 4...")
+  ;   LaunchApp("Beyond Compare 4")
+  ;   arpeActionGUI.Destroy()
   ; }
-  ; Else If (retKeyHook = "w") {
-  ;   WiseGui(OptionWindow)
-  ;   SplashGUI("Starting MS Word...", 2000)
-  ;   Send "^!+#w"
+  ; else if (retKeyHook = "c") {
+  ;   ShowActionSplash("Starting Visual Studio Code...")
+  ;   LaunchApp("Visual Studio Code")
+  ;   arpeActionGUI.Destroy()
   ; }
-  ; Else If (retKeyHook = "x") {
-  ;   WiseGui(OptionWindow)
-  ;   SplashGUI("Starting MS Excel...", 2000)
-  ;   Send "^!+#x"
+  ; else if (retKeyHook = "e") {
+  ;   ShowActionSplash("Starting Epic Pen...")
+  ;   LaunchApp("Epic Pen")
+  ;   arpeActionGUI.Destroy()
   ; }
-  Else If (retKeyHook = "t") {
-    ShowActionSplash("Starting Windows Terminal...")
-    LaunchTerminal()
-  }
-  Else If (retKeyHook = "w") {
-    ShowActionSplash("Starting Warp Terminal...")
-    LaunchApp("Warp")
-  }
-  Else If (retKeyHook = "!") {
-    ShowActionSplash("Starting Windows Terminal (Admin)...")
-    Run "*RunAs wt.exe -w 0 new-tab --title Terminal(Admin) --suppressApplicationTitle"
-  }
-  Else {
-    ; MsgBox("Invalid key pressed: " retKeyHook)
-  }
+  ; else if (retKeyHook = "n") {
+  ;   ShowActionSplash("Starting Notion...")
+  ;   LaunchApp("Notion")
+  ;   arpeActionGUI.Destroy()
+  ; }
+  ; ; Else If (retKeyHook = "o") {
+  ; ;   ShowActionSplash("Starting Outlook...")
+  ; ;   Send "^!+#o"
+  ; ; }
+  ; ; Else If (retKeyHook = "p") {
+  ; ;   WiseGui(OptionWindow)
+  ; ;   SplashGUI("Starting MS PowerPoint...", 2000)
+  ; ;   Send "^!+#p"
+  ; ; }
+  ; ; Else If (retKeyHook = "w") {
+  ; ;   WiseGui(OptionWindow)
+  ; ;   SplashGUI("Starting MS Word...", 2000)
+  ; ;   Send "^!+#w"
+  ; ; }
+  ; ; Else If (retKeyHook = "x") {
+  ; ;   WiseGui(OptionWindow)
+  ; ;   SplashGUI("Starting MS Excel...", 2000)
+  ; ;   Send "^!+#x"
+  ; ; }
+  ; else if (retKeyHook = "T") {
+  ;   ShowActionSplash("Starting Windows Terminal (Admin)...")
+  ;   try {
+  ;     Run "*RunAs wt.exe -w 0 new-tab --title Terminal(Admin) --suppressApplicationTitle"
+  ;   }
+  ;   arpeActionGUI.Destroy()
+  ; }
+  ; else if (retKeyHook = "t") {
+  ;   ShowActionSplash("Starting Windows Terminal...")
+  ;   LaunchTerminal()
+  ;   arpeActionGUI.Destroy()
+  ; }
+  ; else if (retKeyHook = "w") {
+  ;   ShowActionSplash("Starting Warp Terminal...")
+  ;   LaunchApp("Warp")
+  ;   arpeActionGUI.Destroy()
+  ; }
+  ; else {
+  ;   ; MsgBox("Invalid key pressed: " retKeyHook)
+  ; }
 }
 
+!#p::
+{
+  KeyWait "CapsLock"
+  ShowArpeggioSplash(
+    "Window Management Mode:`nArrows: move / Ctrl+Arrows: resize / Alt+Arrows: extend to edge`nNumpad 7..9 / 4..6 / 1..3 → grid`nPress [Tab] to exit"
+  )
+
+  prev := {}
+
+  ; Movement deltas for arrow keys
+  deltas := { Left: { dx: -50, dy: 0 }, Right: { dx: 50, dy: 0 }, Up: { dx: 0, dy: -50 }, Down: { dx: 0, dy: 50 } }
+
+  ; Numpad -> Snap mapping (uses SnapActiveWindow from winui-mgmt.ahk)
+  numpadMap := {}
+  numpadMap["Numpad7"] := { zone: "top", side: "left", size: "half" }
+  numpadMap["Numpad8"] := { zone: "top", side: "full", size: "half" }
+  numpadMap["Numpad9"] := { zone: "top", side: "right", size: "half" }
+  numpadMap["Numpad4"] := { zone: "middle", side: "left", size: "full" }
+  numpadMap["Numpad5"] := { zone: "middle", side: "full", size: "full" }
+  numpadMap["Numpad6"] := { zone: "middle", side: "right", size: "full" }
+  numpadMap["Numpad1"] := { zone: "bottom", side: "left", size: "half" }
+  numpadMap["Numpad2"] := { zone: "bottom", side: "full", size: "half" }
+  numpadMap["Numpad3"] := { zone: "bottom", side: "right", size: "half" }
+
+  loop {
+    Sleep 30
+
+    ; Exit when Tab is pressed
+    if GetKeyState("Tab", "P")
+      break
+
+    ctrl := GetKeyState("LCtrl", "P") || GetKeyState("RCtrl", "P")
+    alt := GetKeyState("LAlt", "P") || GetKeyState("RAlt", "P")
+
+    ; Arrow key handling
+    for key, delta in deltas {
+      state := GetKeyState(key, "P")
+      if state && !prev[key] {
+        if ctrl {
+          ; Resize via percentages (matches winui-mgmt.ahk conventions)
+          if (key = "Up")
+            ResizeWindowBorders(0, 5, 5, 0)
+          else if (key = "Down")
+            ResizeWindowBorders(0, -5, -5, 0)
+          else if (key = "Left")
+            ResizeWindowBorders(-5, 0, 0, -5)
+          else if (key = "Right")
+            ResizeWindowBorders(5, 0, 0, 5)
+        }
+        else if alt {
+          if (key = "Up")
+            ExtendToMonitorEdge("top")
+          else if (key = "Down")
+            ExtendToMonitorEdge("bottom")
+          else if (key = "Left")
+            ExtendToMonitorEdge("left")
+          else if (key = "Right")
+            ExtendToMonitorEdge("right")
+        }
+        else {
+          ; Move the active window
+          MoveActiveWindow(delta.dx, delta.dy)
+        }
+      }
+      prev[key] := state
+    }
+
+    ; Numpad handling (snap)
+    for k, spec in numpadMap {
+      state := GetKeyState(k, "P")
+      if state && !prev[k] {
+        SnapActiveWindow(spec[1], spec[2], spec[3])
+      }
+      prev[k] := state
+    }
+  }
+
+  ; Fade out & destroy splash
+  AW_BLEND := 0x00080000, AW_HIDE := 0x00010000
+  if IsSet(arpeGUI) {
+    DllCall("user32.dll\AnimateWindow", "Ptr", arpeGUI.hwnd, "UInt", 150, "UInt", AW_BLEND | AW_HIDE)
+    arpeGUI.Destroy()
+    arpeGUI := ""
+  }
+
+  return
+}
 ; ╭──────────────────────────────────────────╮
 ; │  [CapsLock]+[C]. Clipboard Utilities     │
 ; ├──────────────────────────────────────────┤
-; │  [c] Open selected into Google           |
+; │  [c] Open selected into Google           │
 ; │  [d] Open selected into ChatGPT          │
 ; │  [g] Open selected into NotebookLM       │
-; |  [i] Open selected into Google AI Studio │
-; |  [p] portal.azure.com                    │
-; |  [y] youtube.com                         │
+; │  [i] Open selected into Google AI Studio │
+; │  [p] portal.azure.com                    │
+; │  [y] youtube.com                         │
 ; ├──────────────────────────────────────────┤
 ; │  [?] Perplexity                          │
 ; │  [?] mail.google.com                     │
@@ -212,7 +345,6 @@ CapsLock & o::
 ;       Return
 ;     }
 
-
 ;     ClipboardGet()
 ;     {
 ;       OldClipboard := ClipboardAll ;Save existing clipboard.
@@ -231,16 +363,15 @@ CapsLock & o::
 ;       Clipboard := OldClipboard
 ;     }
 
-
 ; ╭──────────────────────────────────────────╮
 ; │  [CapsLock]+[B]. OPEN Web Sites          │
 ; ├──────────────────────────────────────────┤
-; │  [c] chat.openai.com                     |
+; │  [c] chat.openai.com                     │
 ; │  [d] dev.azure.com                       │
 ; │  [g] github.com                          │
-; |  [i] icons8.com                          │
-; |  [p] portal.azure.com                    │
-; |  [y] youtube.com                         │
+; │  [i] icons8.com                          │
+; │  [p] portal.azure.com                    │
+; │  [y] youtube.com                         │
 ; ├──────────────────────────────────────────┤
 ; │  [?] Perplexity                          │
 ; │  [?] mail.google.com                     │
