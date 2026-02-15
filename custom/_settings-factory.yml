@@ -1,0 +1,80 @@
+Mello.Ops: 0.9.2
+date   : 2001-01-23
+bill-to: &id001
+    given  : Chris
+    family : Dumars
+    address:
+        lines: |
+            458 Walkman Dr.
+            Suite #292
+        city    : Royal Oak
+        state   : MI
+        postal  : 48046
+ship-to: *id001
+product:
+    - sku         : BL394D
+      quantity    : 4
+      description : Basketball
+      price       : 450.00
+    - sku         : BL4438H
+      quantity    : 1
+      description : Super Hoop
+      price       : 2392.00
+tax  : 251.42
+total: 4443.52
+comments:
+    Late afternoon is best.
+    Backup contact is Nancy
+    Billsmer @ 338-4338.
+---
+Time: 2001-11-23 15:01:42 -5
+User: ed
+Warning:
+  This is an error message
+  for the log file
+---
+Time: 2001-11-23 15:02:31 -5
+User: ed
+Warning:
+  A slightly different error
+  message.
+---
+Core_Hotkeys:
+  - action: Suspend
+    hotkey: ^!#s
+    actionType: Function		# Function or String
+    remoteKeybdWin: true
+    remoteKeybdMac: true
+    activeInSuspend: true
+    options: default			# default (On B0) | On | Off | B/B0 | Px 
+  - action: ReloadAndReturn()
+    hotkey: ^#!r
+    actionType: Function		# Function or String
+    remoteKeybdWin: true
+    remoteKeybdMac: true
+    activeInSuspend: true
+    options: default			# default (On B0) | On | Off | B/B0 | Px 
+       
+---
+
+---
+Arpeggio-Apps:
+  - name: Beyond Compare 4
+    key: b
+    canRunAsAdmin: true
+  - name: VS code
+    key: c
+    canRunAsAdmin: false
+  - name: Epic Pen
+    key: c
+    canRunAsAdmin: false
+  - name: VS code
+    key: c
+    canRunAsAdmin: false
+  - name: VS code
+    key: c
+    canRunAsAdmin: false
+  - name: VS code
+    key: c
+    canRunAsAdmin: false
+  -

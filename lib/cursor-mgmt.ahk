@@ -3,7 +3,7 @@
 ; Persistent
 
 ; ╭════════════════════════════════════════════════════════════════════════════════════════════════════════════════─╮
-; ║  CURSOR-MGMT.AHK                                                                                                 ║
+; ║  CURSOR-MGMT.AHK                                                                                                ║
 ; ║    - Manages the location and dimensions of the Active Window using performant DllCalls.                        ║
 ; ║    - Refactored for maximum readability, maintainability, and performance.                                      ║
 ; ╰═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╯
@@ -37,52 +37,14 @@ SetCursorSize(newSize) {
 }
 
 ; ╭────────────────────────────────────────────────────────────────────────────────────────────╮
-; │ Hotkeys for increasing and decreasing the mouse cursor size.                               │
-; │ {}                                                                                         │
+; │ Hotkeys for increasing (Ctrl+Alt+⊞+]) and decreasing (Ctrol+Alt+⊞+[) the mouse cursor     │
 ; ╰────────────────────────────────────────────────────────────────────────────────────────────╯
-#PgUp:: {
-  ; [Win]+[PgUp] to increase mouse cursor size
+^!#]:: {
+  ; [Win]+[Open_Bracket] to increase mouse cursor size
   SetCursorSize(+1)
 }
 
-#PgDn:: {
-  ; [Win]+[PgDn] to decrease mouse cursor size
+^!#[:: {
+  ; [Win]+[Close_Bracket] to decrease mouse cursor size
   SetCursorSize(-1)
-}
-
-OnExit ExitFunc
-
-ExitFunc(ExitReason, ExitCode)
-{
-  ; Reset the mouse cursor to size 48
-  DllCall("SystemParametersInfo", "UInt", SPI_SETCURSORS, "UInt", 0, "Ptr", origCursorSize, "UInt", SPIF_UPDATEINIFILE | SPIF_SENDCHANGE) ; Update the cursor to apply changes , "Ptr", 0, "UInt", SPIF_UPDATEINIFILE | SPIF_SENDCHANGE) ; Update the cursor to apply changes
-
-  Switch ExitReason, false
-  {
-    Case "Logoff":
-      Result := MsgBox("Are you sure you want to exit?", , 4)
-      if Result = "No" {
-        return 1  ; Callbacks must return non-zero to avoid exit.
-      }
-    Case "Shutdown":
-      Result := MsgBox("Are you sure you want to exit?", , 4)
-      if Result = "No" {
-        return 1  ; Callbacks must return non-zero to avoid exit.
-      }
-    Case "Close":
-    Case "Error":
-    Case "Menu":
-    Case "Exit":
-      ; User-initiated exit
-    Case "Reload":
-      ; Only applies when the Reload function is called within the script
-    Case "Single":
-      ; Only applies when the SingleInstance function is called within the script
-      Result := MsgBox("Loading a new instance?", , 4)
-      if Result = "No" {
-        return 1  ; Callbacks must return non-zero to avoid exit.
-      }
-    Default:
-      ; do nothing
-  }
 }

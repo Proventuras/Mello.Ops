@@ -20,10 +20,9 @@ $Arguments = Join-Path -Path $InstallDir -ChildPath "Mello.Ops.ahk"
 $Description = "Start Mello.Ops"
 $IconPath = Join-Path -Path $InstallDir -ChildPath "media\icons\Mello.Ops.ico"
 $StartMenuFolderName = "Mello"
-# $AHKZipUrl = "https://www.autohotkey.com/download/2.0/AutoHotkey_2.0.19.zip"
-$AHKZipUrl = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.19/AutoHotkey_2.0.19.zip"
+$AHKZipUrl = "https://www.autohotkey.com/download/2.0/AutoHotkey_2.0.19.zip"
 $AHKZipPath = Join-Path -Path $InstallDir -ChildPath "AutoHotkey.zip"
-$RepoZipUrl = "https://github.com/Proventuras/Mello.Ops/archive/refs/heads/main.zip"
+$RepoZipUrl = "https://github.com/voltaire-toledo/Mello.Ops/archive/refs/heads/main.zip"
 $RepoZipPath = Join-Path $env:TEMP "Mello.Ops-main.zip"
 $TempExtractPath = Join-Path $env:TEMP "Mello.Ops-extract"
 $StartMenuPath = [Environment]::GetFolderPath("StartMenu")
@@ -32,7 +31,6 @@ $StartMenuFolderPath = Join-Path -Path $StartMenuProgramsPath -ChildPath $StartM
 $ShortcutPath = Join-Path -Path $StartMenuFolderPath -ChildPath $ShortcutName
 $TargetPath = Join-Path -Path $AHKBinPath -ChildPath $AHKExecutableName
 $isRunFromUrl = $false
-$ForceAHKDownload = $true
 #endregion
 
 #region Helper Functions
@@ -55,106 +53,30 @@ function New-Directory {
   return $true
 }
 
-# function Get-AutoHotkey {
-#   # ╭─────────────────────────────────────────────────────╮
-#   # │ Function: Get-AutoHotkey                            │
-#   # | Download and extract an approved AutoHotkey version │
-#   # ╰─────────────────────────────────────────────────────╯
-#   if (!(New-Directory -Path $AHKBinPath)) {
-#     return $false
-#   }
-#   Write-Host "Downloading AutoHotkey..."
-#   try {
-#     # Force strong TLS
-#     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-#     # Set up headers to mimic curl
-#     $headers = @{
-#         "User-Agent" = "curl/8.14.1"
-#         "Accept"     = "*/*"
-#         "Host"       = "www.autohotkey.com"
-#     }
-
-#     # Run the request
-#     Invoke-WebRequest -Uri $AHKZipUrl -Headers $headers -OutFile $AHKZipPath -ErrorAction Stop
-#     Expand-Archive -Path $AHKZipPath -DestinationPath $AHKBinPath -Force
-#     Remove-Item -Path $AHKZipPath -Force
-#     Write-Host "AutoHotkey downloaded and extracted to '$AHKBinPath'."
-#     return $true
-#   }
-#   catch {
-#     Write-Error "Failed to download or extract AutoHotkey: $($_.Exception.Message)"
-#     return $false
-#   }
-# }
-
 function Get-AutoHotkey {
   # ╭─────────────────────────────────────────────────────╮
   # │ Function: Get-AutoHotkey                            │
-  # | Resolve latest AutoHotkey release on GitHub and     │
-  # | download the ZIP asset, then extract it to $AHKBinPath
+  # | Download and extract an approved AutoHotkey version │
   # ╰─────────────────────────────────────────────────────╯
   if (!(New-Directory -Path $AHKBinPath)) {
     return $false
   }
-
-  Write-Host "Resolving latest AutoHotkey release from GitHub..."
+  Write-Host "Downloading AutoHotkey..."
   try {
     # Force strong TLS
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+    # Set up headers to mimic curl
     $headers = @{
-      'User-Agent' = 'PowerShell'
-      'Accept'     = 'application/vnd.github.v3+json'
-    }
-    if ($env:GITHUB_TOKEN) {
-      $headers['Authorization'] = "token $env:GITHUB_TOKEN"
+        "User-Agent" = "curl/8.14.1"
+        "Accept"     = "*/*"
+        "Host"       = "www.autohotkey.com"
     }
 
-    $apiUrl = 'https://api.github.com/repos/AutoHotkey/AutoHotkey/releases/latest'
-    $release = Invoke-RestMethod -Uri $apiUrl -Headers $headers -ErrorAction Stop
-
-    # Select the best .zip asset (largest .zip if multiple)
-    $asset = $release.assets |
-    Where-Object { $_.name -match '\.zip$' } |
-    Sort-Object -Property size -Descending |
-    Select-Object -First 1
-
-    if (-not $asset) {
-      Write-Error "No .zip asset found in the latest AutoHotkey release."
-      return $false
-    }
-
-    $downloadUrl = $asset.browser_download_url
-    Write-Host "Downloading $($asset.name) from $downloadUrl ..."
-
-    # Use a download header appropriate for binary content
-    $dlHeaders = @{
-      'User-Agent' = 'PowerShell'
-      'Accept'     = 'application/octet-stream'
-    }
-    if ($env:GITHUB_TOKEN) {
-      $dlHeaders['Authorization'] = "token $env:GITHUB_TOKEN"
-    }
-
-    try {
-      # Allow more redirections for GitHub -> CDN redirects
-      Invoke-WebRequest -Uri $downloadUrl -Headers $dlHeaders -OutFile $AHKZipPath -MaximumRedirection 20 -UseBasicParsing -ErrorAction Stop
-    }
-    catch {
-      Write-Warning "Invoke-WebRequest failed: $($_.Exception.Message). Attempting BITS transfer fallback..."
-      try {
-        Start-BitsTransfer -Source $downloadUrl -Destination $AHKZipPath -ErrorAction Stop
-      }
-      catch {
-        Write-Error "Fallback BITS download failed: $($_.Exception.Message)"
-        throw
-      }
-    }
-
+    # Run the request
+    Invoke-WebRequest -Uri $AHKZipUrl -Headers $headers -OutFile $AHKZipPath -ErrorAction Stop
     Expand-Archive -Path $AHKZipPath -DestinationPath $AHKBinPath -Force
     Remove-Item -Path $AHKZipPath -Force
-
     Write-Host "AutoHotkey downloaded and extracted to '$AHKBinPath'."
     return $true
   }
@@ -230,7 +152,7 @@ function Install-FromUrl {
   }
 
   # Ensure AutoHotkey is downloaded and extracted.
-  if ($ForceAHKDownload -or -not (Test-Path -Path $TargetPath)) {
+  if (!(Test-Path -Path $AHKBinPath)) {
     if (!(Get-AutoHotkey)) {
       Write-Error "Failed to set up AutoHotkey. Exiting script."
       exit 1
@@ -262,7 +184,7 @@ function Run-FromLocal {
   $TargetPath = Join-Path -Path $AHKBinPath -ChildPath $AHKExecutableName
 
   # Ensure AutoHotkey is downloaded and extracted to the local ahkbin.
-  if ($ForceAHKDownload -or -not (Test-Path -Path $TargetPath)) {
+  if (!(Test-Path -Path $AHKBinPath)) {
     if (!(Get-AutoHotkey)) {
       Write-Error "Failed to set up AutoHotkey for local run. Exiting script."
       exit 1
@@ -294,12 +216,11 @@ function Run-FromLocal {
 
 #region Main()
 # Determine if the script was invoked from a URL or from a file.
-$isRunFromUrl = ($null -eq $MyInvocation.MyCommand.Path -or $MyInvocation.MyCommand.Path -eq '-')
-if ($isRunFromUrl) {
-  Write-Host "$MyInvocation.MyCommand.Path is null or empty. Assuming script is run from URL."
-  Install-FromUrl
-}
-else {
-  Run-FromLocal
-}
+ $isRunFromUrl = ($null -eq $MyInvocation.MyCommand.Path -or $MyInvocation.MyCommand.Path -eq '-')
+ if ($isRunFromUrl) {
+   Write-Host "$MyInvocation.MyCommand.Path is null or empty. Assuming script is run from URL."
+   Install-FromUrl
+ } else {
+   Run-FromLocal
+ }
 #endregion

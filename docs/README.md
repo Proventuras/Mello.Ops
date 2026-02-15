@@ -18,9 +18,7 @@ Below is a table of the most useful hotkeys and what they do.
 
 | Hotkey Combo                | What It Does                                 | Why It's Awesome                          |
 |-----------------------------|----------------------------------------------|-------------------------------------------|
-| Ctrl + Win + Alt + K        | Toggle Aux Hotkeys                           | Instantly enable/disable extra hotkeys    |
-| Ctrl + Win + Alt + S        | Toggle Aux Hotstrings                        | Toggle your custom text expansions        |
-| Ctrl + Win + Alt + R        | Reload Mello.Ops                             | Quick script refresh                      |
+| Ctrl + ⊞ + Alt + R        | Reload Mello.Ops                             | Quick script refresh                      |
 | Ctrl + Win + Alt + E        | Edit Mello.Ops script                        | Jump right into editing                   |
 | Ctrl + Win + Alt + F2       | Open AutoHotkey Help                         | Get help, fast                            |
 | Ctrl + Win + Alt + F1       | Show About/Help                              | See info about Mello.Ops                  |

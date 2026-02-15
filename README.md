@@ -1,8 +1,9 @@
 # ⌨️ Mello.Ops
 
-Welcome to **Mello.Ops** - the all-in-one, supercharged AutoHotkey toolkit for Windows power users, keyboard tinkerers, and productivity wizards!  
+**Chill, flow, repeat.**
 
-Unleash a world of hotkeys, text replacements, automations, and clever tricks, all wrapped up in a friendly, customizable package.
+Welcome to **Mello.Ops** - the all-in-one, supercharged AutoHotkey toolkit for Windows power users, keyboard tinkerers, and productivity wizards!  
+Unleash a world of hotkeys, automations, and tricks, all wrapped up in a friendly, customizable package.
 
 ---
 
@@ -77,6 +78,7 @@ Just right-click the tray icon and select **"Run at Startup"**. Easy!
  ├─ 📄 Mello.Ops.ahk              # Main script
  ├─ 📄 Start-Mello.Ops.ps1        # PowerShell installer and launcher
  └─ 📄 README.md
+```
 ---
 
 ## 🤝 Contributing
@@ -90,6 +92,14 @@ Open an [issue](https://github.com/Proventuras/Mello.Ops/issues) or submit a PR.
 
 Ask away in the [issues](https://github.com/Proventuras/Mello.Ops/issues) or start a discussion.  
 We love making Windows more fun and productive!
+
+---
+
+## Recommended Tools and Utilities to add to your setup
+
+<details>
+<summary>Other Tools and Utilities</summary>
+</details>
 
 ---
 
